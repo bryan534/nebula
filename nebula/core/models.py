@@ -17,16 +17,16 @@ from RTN.models import (AudioRankModel, CustomRank, CustomRanksConfig,
                         OptionsConfig, QualityRankModel, ResolutionConfig,
                         RipsRankModel)
 
-from comet.core.db_router import ReplicaAwareDatabase
-from comet.core.logger import logger
+from nebula.core.db_router import ReplicaAwareDatabase
+from nebula.core.logger import logger
 
-_comet_fk_enabled = False
+_nebula_fk_enabled = False
 _SQLITE_BUSY_TIMEOUT_MS = 30000
 
 
-def set_comet_foreign_keys_enabled(enabled: bool) -> None:
-    global _comet_fk_enabled
-    _comet_fk_enabled = enabled
+def set_nebula_foreign_keys_enabled(enabled: bool) -> None:
+    global _nebula_fk_enabled
+    _nebula_fk_enabled = enabled
 
 
 async def apply_sqlite_connection_pragmas(
@@ -38,19 +38,19 @@ async def apply_sqlite_connection_pragmas(
     await execute(f"PRAGMA foreign_keys={'ON' if foreign_keys_enabled else 'OFF'}")
 
 
-if not getattr(SQLiteConnection, "_comet_pragmas_patched", False):
+if not getattr(SQLiteConnection, "_nebula_pragmas_patched", False):
     _original_sqlite_acquire = SQLiteConnection.acquire
 
-    async def _comet_sqlite_acquire(self):
+    async def _nebula_sqlite_acquire(self):
         await _original_sqlite_acquire(self)
         assert self._connection is not None
         await apply_sqlite_connection_pragmas(
             self._connection.execute,
-            foreign_keys_enabled=_comet_fk_enabled,
+            foreign_keys_enabled=_nebula_fk_enabled,
         )
 
-    SQLiteConnection.acquire = _comet_sqlite_acquire
-    SQLiteConnection._comet_pragmas_patched = True
+    SQLiteConnection.acquire = _nebula_sqlite_acquire
+    SQLiteConnection._nebula_pragmas_patched = True
 
 
 class AppSettings(BaseSettings):
@@ -58,8 +58,8 @@ class AppSettings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="allow"
     )
 
-    ADDON_ID: Optional[str] = "stremio.comet.fast"
-    ADDON_NAME: Optional[str] = "Comet"
+    ADDON_ID: Optional[str] = "stremio.nebula.fast"
+    ADDON_NAME: Optional[str] = "Nebula"
     FASTAPI_HOST: Optional[str] = "0.0.0.0"
     FASTAPI_PORT: Optional[int] = 8000
     FASTAPI_WORKERS: Optional[int] = 1
@@ -77,7 +77,7 @@ class AppSettings(BaseSettings):
     PUBLIC_METRICS_API: Optional[bool] = False
     DATABASE_TYPE: Optional[str] = "sqlite"
     DATABASE_URL: Optional[str] = "username:password@hostname:port"
-    DATABASE_PATH: Optional[str] = "data/comet.db"
+    DATABASE_PATH: Optional[str] = "data/nebula.db"
     DATABASE_BATCH_SIZE: Optional[int] = 20000
     DATABASE_READ_REPLICA_URLS: List[str] = Field(default_factory=list)
     DATABASE_STARTUP_CLEANUP_INTERVAL: Optional[int] = 3600
@@ -113,9 +113,9 @@ class AppSettings(BaseSettings):
     MAGNET_RESOLVE_TIMEOUT: Optional[int] = 60
     CATALOG_TIMEOUT: Optional[int] = 30
     DOWNLOAD_TORRENT_FILES: Optional[bool] = False
-    SCRAPE_COMET: Union[bool, str] = False
-    COMET_URL: Union[str, List[str]] = "https://comet.feels.legal"
-    COMET_CLEAN_TRACKER: Optional[bool] = False
+    SCRAPE_NEBULA: Union[bool, str] = False
+    NEBULA_URL: Union[str, List[str]] = "https://nebula.feels.legal"
+    NEBULA_CLEAN_TRACKER: Optional[bool] = False
     SCRAPE_NYAA: Union[bool, str] = False
     NYAA_ANIME_ONLY: Optional[bool] = True
     NYAA_MAX_CONCURRENT_PAGES: Optional[int] = 5
@@ -160,6 +160,11 @@ class AppSettings(BaseSettings):
     TORBOX_API_KEY: Optional[str] = None
     SCRAPE_TORRENTSDB: Union[bool, str] = False
     SCRAPE_PEERFLIX: Union[bool, str] = False
+    SCRAPE_PELISPANDA: Union[bool, str] = False
+    SCRAPE_HACKTORRENT: Union[bool, str] = False
+    SCRAPE_LEETX: Union[bool, str] = False
+    SCRAPE_TORRENTGALAXY: Union[bool, str] = False
+    SCRAPE_EZTV: Union[bool, str] = False
     CUSTOM_HEADER_HTML: Optional[str] = None
     PROXY_DEBRID_STREAM: Optional[bool] = False
     PROXY_DEBRID_STREAM_PASSWORD: Optional[str] = "".join(
@@ -176,11 +181,11 @@ class AppSettings(BaseSettings):
     DEBRID_ACCOUNT_SCRAPE_INITIAL_WARM_TIMEOUT: float = 5.0
     STREMTHRU_URL: Optional[str] = "https://stremthru.13377001.xyz"
     DISABLE_TORRENT_STREAMS: Optional[bool] = False
-    TORRENT_DISABLED_STREAM_NAME: Optional[str] = "[INFO] Comet"
+    TORRENT_DISABLED_STREAM_NAME: Optional[str] = "[INFO] Nebula"
     TORRENT_DISABLED_STREAM_DESCRIPTION: Optional[str] = (
         "Direct torrent playback is disabled on this server."
     )
-    TORRENT_DISABLED_STREAM_URL: Optional[str] = "https://comet.feels.legal"
+    TORRENT_DISABLED_STREAM_URL: Optional[str] = "https://nebula.feels.legal"
     PUBLIC_BASE_URL: Optional[str] = None
     REMOVE_ADULT_CONTENT: Optional[bool] = False
     BACKGROUND_SCRAPER_ENABLED: Optional[bool] = False
@@ -232,109 +237,109 @@ class AppSettings(BaseSettings):
     DOWNLOAD_GENERIC_TRACKERS: Optional[bool] = False
     SMART_LANGUAGE_DETECTION: Optional[bool] = False
 
-    # CometNet P2P Network Configuration
-    COMETNET_ENABLED: Optional[bool] = False
-    COMETNET_LISTEN_PORT: Optional[int] = 8765
-    COMETNET_HTTP_PORT: Optional[int] = 8766
-    COMETNET_BOOTSTRAP_NODES: List[str] = []
-    COMETNET_MANUAL_PEERS: List[str] = []
-    COMETNET_MAX_PEERS: Optional[int] = 50
-    COMETNET_MIN_PEERS: Optional[int] = 3
-    COMETNET_KEYS_DIR: Optional[str] = "data/cometnet"
-    COMETNET_ADVERTISE_URL: Optional[str] = None
-    COMETNET_KEY_PASSWORD: Optional[str] = None
-    COMETNET_ALLOW_PRIVATE_PEX: Optional[bool] = False
-    COMETNET_SKIP_REACHABILITY_CHECK: Optional[bool] = False
-    COMETNET_SKIP_TIME_CHECK: Optional[bool] = False
-    COMETNET_TIME_CHECK_TOLERANCE: Optional[int] = 60
-    COMETNET_TIME_CHECK_TIMEOUT: Optional[int] = 5
-    COMETNET_REACHABILITY_RETRIES: Optional[int] = 5
-    COMETNET_REACHABILITY_RETRY_DELAY: Optional[int] = 10
-    COMETNET_REACHABILITY_TIMEOUT: Optional[int] = 10
-    COMETNET_UPNP_ENABLED: Optional[bool] = False
-    COMETNET_UPNP_LEASE_DURATION: Optional[int] = 3600
-    COMETNET_RELAY_URL: Optional[str] = None
-    COMETNET_API_KEY: Optional[str] = "".join(
+    # NebulaNet P2P Network Configuration
+    NEBULANET_ENABLED: Optional[bool] = False
+    NEBULANET_LISTEN_PORT: Optional[int] = 8765
+    NEBULANET_HTTP_PORT: Optional[int] = 8766
+    NEBULANET_BOOTSTRAP_NODES: List[str] = []
+    NEBULANET_MANUAL_PEERS: List[str] = []
+    NEBULANET_MAX_PEERS: Optional[int] = 50
+    NEBULANET_MIN_PEERS: Optional[int] = 3
+    NEBULANET_KEYS_DIR: Optional[str] = "data/nebulanet"
+    NEBULANET_ADVERTISE_URL: Optional[str] = None
+    NEBULANET_KEY_PASSWORD: Optional[str] = None
+    NEBULANET_ALLOW_PRIVATE_PEX: Optional[bool] = False
+    NEBULANET_SKIP_REACHABILITY_CHECK: Optional[bool] = False
+    NEBULANET_SKIP_TIME_CHECK: Optional[bool] = False
+    NEBULANET_TIME_CHECK_TOLERANCE: Optional[int] = 60
+    NEBULANET_TIME_CHECK_TIMEOUT: Optional[int] = 5
+    NEBULANET_REACHABILITY_RETRIES: Optional[int] = 5
+    NEBULANET_REACHABILITY_RETRY_DELAY: Optional[int] = 10
+    NEBULANET_REACHABILITY_TIMEOUT: Optional[int] = 10
+    NEBULANET_UPNP_ENABLED: Optional[bool] = False
+    NEBULANET_UPNP_LEASE_DURATION: Optional[int] = 3600
+    NEBULANET_RELAY_URL: Optional[str] = None
+    NEBULANET_API_KEY: Optional[str] = "".join(
         random.choices(string.ascii_letters + string.digits, k=16)
     )  # API key for standalone service auth
-    COMETNET_STATE_SAVE_INTERVAL: Optional[int] = (
+    NEBULANET_STATE_SAVE_INTERVAL: Optional[int] = (
         300  # Periodic state save interval in seconds (5 minutes)
     )
 
-    # CometNet Gossip Tuning
-    COMETNET_GOSSIP_FANOUT: Optional[int] = 3
-    COMETNET_GOSSIP_INTERVAL: Optional[float] = 1.0
-    COMETNET_GOSSIP_MESSAGE_TTL: Optional[int] = 5
-    COMETNET_GOSSIP_MAX_TORRENTS_PER_MESSAGE: Optional[int] = 1000
+    # NebulaNet Gossip Tuning
+    NEBULANET_GOSSIP_FANOUT: Optional[int] = 3
+    NEBULANET_GOSSIP_INTERVAL: Optional[float] = 1.0
+    NEBULANET_GOSSIP_MESSAGE_TTL: Optional[int] = 5
+    NEBULANET_GOSSIP_MAX_TORRENTS_PER_MESSAGE: Optional[int] = 1000
 
-    COMETNET_GOSSIP_VALIDATION_FUTURE_TOLERANCE: Optional[int] = 60
-    COMETNET_GOSSIP_VALIDATION_PAST_TOLERANCE: Optional[int] = 300
-    COMETNET_GOSSIP_TORRENT_MAX_AGE: Optional[int] = 604800
+    NEBULANET_GOSSIP_VALIDATION_FUTURE_TOLERANCE: Optional[int] = 60
+    NEBULANET_GOSSIP_VALIDATION_PAST_TOLERANCE: Optional[int] = 300
+    NEBULANET_GOSSIP_TORRENT_MAX_AGE: Optional[int] = 604800
 
-    # CometNet Discovery Tuning
-    COMETNET_PEX_BATCH_SIZE: Optional[int] = 20
-    COMETNET_PEER_CONNECT_BACKOFF_MAX: Optional[int] = 300
-    COMETNET_PEER_MAX_FAILURES: Optional[int] = 5
-    COMETNET_PEER_CLEANUP_AGE: Optional[int] = 604800
+    # NebulaNet Discovery Tuning
+    NEBULANET_PEX_BATCH_SIZE: Optional[int] = 20
+    NEBULANET_PEER_CONNECT_BACKOFF_MAX: Optional[int] = 300
+    NEBULANET_PEER_MAX_FAILURES: Optional[int] = 5
+    NEBULANET_PEER_CLEANUP_AGE: Optional[int] = 604800
 
-    # CometNet Transport Tuning
-    COMETNET_TRANSPORT_MAX_MESSAGE_SIZE: Optional[int] = 10485760  # 10MB
-    COMETNET_TRANSPORT_MAX_CONNECTIONS_PER_IP: Optional[int] = 3
-    COMETNET_TRANSPORT_PING_INTERVAL: Optional[float] = 30.0
-    COMETNET_TRANSPORT_CONNECTION_TIMEOUT: Optional[float] = 120.0
-    COMETNET_TRANSPORT_MAX_LATENCY_MS: Optional[float] = (
+    # NebulaNet Transport Tuning
+    NEBULANET_TRANSPORT_MAX_MESSAGE_SIZE: Optional[int] = 10485760  # 10MB
+    NEBULANET_TRANSPORT_MAX_CONNECTIONS_PER_IP: Optional[int] = 3
+    NEBULANET_TRANSPORT_PING_INTERVAL: Optional[float] = 30.0
+    NEBULANET_TRANSPORT_CONNECTION_TIMEOUT: Optional[float] = 120.0
+    NEBULANET_TRANSPORT_MAX_LATENCY_MS: Optional[float] = (
         10000.0  # Max acceptable latency before disconnection
     )
-    COMETNET_TRANSPORT_RATE_LIMIT_ENABLED: Optional[bool] = True
-    COMETNET_TRANSPORT_RATE_LIMIT_COUNT: Optional[int] = 20  # Messages per window
-    COMETNET_TRANSPORT_RATE_LIMIT_WINDOW: Optional[float] = 1.0  # Seconds
+    NEBULANET_TRANSPORT_RATE_LIMIT_ENABLED: Optional[bool] = True
+    NEBULANET_TRANSPORT_RATE_LIMIT_COUNT: Optional[int] = 20  # Messages per window
+    NEBULANET_TRANSPORT_RATE_LIMIT_WINDOW: Optional[float] = 1.0  # Seconds
 
-    # CometNet Reputation Tuning
-    COMETNET_REPUTATION_INITIAL: Optional[float] = 100.0
-    COMETNET_REPUTATION_MIN: Optional[float] = 0.0
-    COMETNET_REPUTATION_MAX: Optional[float] = 10000.0
-    COMETNET_REPUTATION_THRESHOLD_UNTRUSTED: Optional[float] = 50.0  # Ban threshold
-    COMETNET_REPUTATION_THRESHOLD_TRUSTED: Optional[float] = (
+    # NebulaNet Reputation Tuning
+    NEBULANET_REPUTATION_INITIAL: Optional[float] = 100.0
+    NEBULANET_REPUTATION_MIN: Optional[float] = 0.0
+    NEBULANET_REPUTATION_MAX: Optional[float] = 10000.0
+    NEBULANET_REPUTATION_THRESHOLD_UNTRUSTED: Optional[float] = 50.0  # Ban threshold
+    NEBULANET_REPUTATION_THRESHOLD_TRUSTED: Optional[float] = (
         1000.0  # Trust threshold (approx 1 day of heavy scraping)
     )
-    COMETNET_REPUTATION_BONUS_VALID_CONTRIBUTION: Optional[float] = (
+    NEBULANET_REPUTATION_BONUS_VALID_CONTRIBUTION: Optional[float] = (
         0.001  # 1M torrents = 1000 pts
     )
-    COMETNET_REPUTATION_BONUS_PER_DAY_ANCIENNETY: Optional[float] = 10.0
-    COMETNET_REPUTATION_BONUS_MAX_ANCIENNETY: Optional[float] = (
+    NEBULANET_REPUTATION_BONUS_PER_DAY_ANCIENNETY: Optional[float] = 10.0
+    NEBULANET_REPUTATION_BONUS_MAX_ANCIENNETY: Optional[float] = (
         1000.0  # Max 1000 pts from age (100 days)
     )
-    COMETNET_REPUTATION_PENALTY_INVALID_CONTRIBUTION: Optional[float] = 50.0
-    COMETNET_REPUTATION_PENALTY_INVALID_SIGNATURE: Optional[float] = 500.0
+    NEBULANET_REPUTATION_PENALTY_INVALID_CONTRIBUTION: Optional[float] = 50.0
+    NEBULANET_REPUTATION_PENALTY_INVALID_SIGNATURE: Optional[float] = 500.0
 
-    # CometNet Contribution Mode
+    # NebulaNet Contribution Mode
     # full: Share own torrents + receive + repropagate (default)
     # consumer: Receive + repropagate, but don't share own torrents
     # source: Share own torrents only (dedicated scraper)
     # leech: Receive only, don't repropagate (save bandwidth)
-    COMETNET_CONTRIBUTION_MODE: Optional[str] = "full"
+    NEBULANET_CONTRIBUTION_MODE: Optional[str] = "full"
 
-    # CometNet Trust Pools
+    # NebulaNet Trust Pools
     # List of pool IDs to subscribe to
     # If empty: accept from everyone (open mode)
-    COMETNET_TRUSTED_POOLS: List[str] = []
+    NEBULANET_TRUSTED_POOLS: List[str] = []
     # Directory for storing pool manifests and membership data
-    COMETNET_POOLS_DIR: Optional[str] = "data/cometnet/pools"
+    NEBULANET_POOLS_DIR: Optional[str] = "data/nebulanet/pools"
 
-    # CometNet Private Network
+    # NebulaNet Private Network
     # Isolate this node in a private network
-    COMETNET_PRIVATE_NETWORK: Optional[bool] = False
+    NEBULANET_PRIVATE_NETWORK: Optional[bool] = False
     # Network ID for private network (required if PRIVATE_NETWORK=true)
-    COMETNET_NETWORK_ID: Optional[str] = None
+    NEBULANET_NETWORK_ID: Optional[str] = None
     # Password to join the private network (Argon2 hashed for auth)
-    COMETNET_NETWORK_PASSWORD: Optional[str] = None
+    NEBULANET_NETWORK_PASSWORD: Optional[str] = None
     # Pools to ingest from even when in private mode
-    COMETNET_INGEST_POOLS: List[str] = []
+    NEBULANET_INGEST_POOLS: List[str] = []
 
-    # CometNet Node Alias
+    # NebulaNet Node Alias
     # Optional friendly name for this node (exchanged with other peers)
     # If not set, users will only see the Node ID
-    COMETNET_NODE_ALIAS: Optional[str] = None
+    NEBULANET_NODE_ALIAS: Optional[str] = None
 
     @field_validator("EXECUTOR_MAX_WORKERS", mode="before")
     def normalize_executor_workers(cls, v):
@@ -388,7 +393,7 @@ class AppSettings(BaseSettings):
         "STREMTHRU_URL",
         "STREMTHRU_SCRAPE_URL",
         "BITMAGNET_URL",
-        "COMET_URL",
+        "NEBULA_URL",
         "ZILEAN_URL",
         "TORRENTIO_URL",
         "MEDIAFUSION_URL",
@@ -550,7 +555,7 @@ IS_SQLITE = settings.DATABASE_TYPE == "sqlite"
 JSON_FUNC = "json_array_elements_text" if IS_POSTGRES else "json_each"
 
 
-class CometSettingsModel(SettingsModel):
+class NebulaSettingsModel(SettingsModel):
     model_config = SettingsConfigDict()
 
     resolutions: ResolutionConfig = ResolutionConfig(
@@ -602,7 +607,7 @@ class CometSettingsModel(SettingsModel):
     )
 
 
-rtn_settings_default = CometSettingsModel()
+rtn_settings_default = NebulaSettingsModel()
 rtn_settings_default_dumped = rtn_settings_default.model_dump()
 # {
 #     "profile":"default",
@@ -1032,7 +1037,7 @@ class ConfigModel(BaseModel):
     languages: Optional[dict] = rtn_settings_default_dumped["languages"]
     resolutions: Optional[dict] = rtn_settings_default_dumped["resolutions"]
     options: Optional[dict] = rtn_settings_default_dumped["options"]
-    rtnSettings: Optional[CometSettingsModel] = rtn_settings_default
+    rtnSettings: Optional[NebulaSettingsModel] = rtn_settings_default
     rtnRanking: Optional[DefaultRanking] = rtn_ranking_default
 
     @field_validator("maxResultsPerResolution")
