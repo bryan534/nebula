@@ -4,15 +4,15 @@ from urllib.parse import quote, unquote
 import aiohttp
 from RTN import normalize_title, parse, title_match
 
-from comet.core.execution import get_executor
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.debrid.exceptions import DebridAuthError, DebridLinkGenerationError
-from comet.metadata.episode_index import EpisodeIndexService
-from comet.services.debrid_cache import cache_availability
-from comet.services.filtering import quick_alias_match
-from comet.services.torrent_manager import torrent_update_queue
-from comet.utils.parsing import (ensure_multi_language, is_video,
+from nebula.core.execution import get_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.debrid.exceptions import DebridAuthError, DebridLinkGenerationError
+from nebula.metadata.episode_index import EpisodeIndexService
+from nebula.services.debrid_cache import cache_availability
+from nebula.services.filtering import quick_alias_match
+from nebula.services.torrent_manager import torrent_update_queue
+from nebula.utils.parsing import (ensure_multi_language, is_video,
                                  match_parsed_episode_target, parse_media_id)
 
 
@@ -59,7 +59,7 @@ class StremThru:
         return {
             "X-StremThru-Store-Name": self.store_name,
             "X-StremThru-Store-Authorization": f"Bearer {self.store_token}",
-            "User-Agent": "comet",
+            "User-Agent": "nebula",
         }
 
     @staticmethod

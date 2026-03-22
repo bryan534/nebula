@@ -1,17 +1,17 @@
 """
-CometNet Backend Interface
+NebulaNet Backend Interface
 
-Defines the common interface for both the local P2P service (CometNetService)
-and the relay client (CometNetRelay). This allows the API and other components
-to interact with CometNet transparently properly regardless of the running mode.
+Defines the common interface for both the local P2P service (NebulaNetService)
+and the relay client (NebulaNetRelay). This allows the API and other components
+to interact with NebulaNet transparently properly regardless of the running mode.
 """
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 
-class CometNetBackend(ABC):
-    """Abstract base class for CometNet backends."""
+class NebulaNetBackend(ABC):
+    """Abstract base class for NebulaNet backends."""
 
     @property
     @abstractmethod

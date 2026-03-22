@@ -9,14 +9,14 @@ def check_elementum():
         addon = xbmcaddon.Addon(ELEMENTUM_ADDON_ID)
     except Exception:
         xbmcgui.Dialog().notification(
-            "Comet",
+            "Nebula",
             "Elementum is not installed",
             xbmcgui.NOTIFICATION_ERROR,
         )
         return
 
     xbmcgui.Dialog().notification(
-        "Comet",
+        "Nebula",
         f"Elementum detected (v{addon.getAddonInfo('version')})",
         xbmcgui.NOTIFICATION_INFO,
     )

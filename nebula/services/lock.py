@@ -2,9 +2,9 @@ import asyncio
 import time
 import uuid
 
-from comet.core.database import database, fetch_flag
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.database import database, fetch_flag
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 _ACQUIRE_OR_REFRESH_LOCK_QUERY = """
     INSERT INTO scrape_locks (lock_key, instance_id, updated_at, expires_at)

@@ -1,7 +1,7 @@
 """
-CometNet Pools Module
+NebulaNet Pools Module
 
-Implements the Trust Pools system for CometNet.
+Implements the Trust Pools system for NebulaNet.
 Pools are groups of nodes that trust each other and share torrents.
 
 Key concepts:
@@ -24,10 +24,10 @@ import aiofiles
 import msgpack
 from pydantic import BaseModel, Field, computed_field, field_validator
 
-from comet.cometnet.crypto import NodeIdentity
-from comet.cometnet.utils import canonicalize_data, run_in_executor
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.nebulanet.crypto import NodeIdentity
+from nebula.nebulanet.utils import canonicalize_data, run_in_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 class MemberRole(str, Enum):
@@ -210,7 +210,7 @@ class PoolInvite(BaseModel):
         """
         Generate a shareable invite link.
 
-        Format: cometnet://join?pool=<pool_id>&code=<invite_code>&node=<node_url>
+        Format: nebulanet://join?pool=<pool_id>&code=<invite_code>&node=<node_url>
         This format allows other nodes to:
         1. Know which pool to join
         2. Have the invite code
@@ -222,7 +222,7 @@ class PoolInvite(BaseModel):
         }
         if self.node_url:
             params["node"] = self.node_url
-        return f"cometnet://join?{urllib.parse.urlencode(params)}"
+        return f"nebulanet://join?{urllib.parse.urlencode(params)}"
 
     @classmethod
     def parse_link(cls, link: str) -> Optional[Dict[str, str]]:
@@ -231,10 +231,10 @@ class PoolInvite(BaseModel):
 
         Returns dict with 'pool', 'code', and optionally 'node' keys.
         """
-        if not link.startswith("cometnet://join?"):
+        if not link.startswith("nebulanet://join?"):
             # Try legacy format
-            if link.startswith("cometnet://pool/"):
-                parts = link.replace("cometnet://pool/", "").split("/invite/")
+            if link.startswith("nebulanet://pool/"):
+                parts = link.replace("nebulanet://pool/", "").split("/invite/")
                 if len(parts) == 2:
                     return {"pool": parts[0], "code": parts[1]}
             return None
@@ -269,7 +269,7 @@ class PoolStore:
     """
 
     def __init__(self, pools_dir: Optional[str] = None):
-        self.pools_dir = Path(pools_dir or settings.COMETNET_POOLS_DIR)
+        self.pools_dir = Path(pools_dir or settings.NEBULANET_POOLS_DIR)
         self.manifests_dir = self.pools_dir / "manifests"
         self.invites_dir = self.pools_dir / "invites"
 
@@ -296,7 +296,7 @@ class PoolStore:
         await self._load_pool_peers()
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Loaded {len(self._manifests)} pools, "
             f"{len(self._memberships)} memberships, "
             f"{len(self._subscriptions)} subscriptions",
@@ -388,7 +388,7 @@ class PoolStore:
                     public_key=identity.public_key_hex,
                     role=MemberRole.CREATOR,
                     added_by=identity.public_key_hex,
-                    alias=settings.COMETNET_NODE_ALIAS,
+                    alias=settings.NEBULANET_NODE_ALIAS,
                 )
             ],
         )
@@ -400,7 +400,7 @@ class PoolStore:
         self._memberships.add(pool_id)
         await self._save_memberships()
 
-        logger.log("COMETNET", f"Created pool '{display_name}' ({pool_id})")
+        logger.log("NEBULANET", f"Created pool '{display_name}' ({pool_id})")
         return manifest
 
     async def delete_pool(self, pool_id: str) -> bool:
@@ -498,7 +498,7 @@ class PoolStore:
         await self.store_manifest(manifest, identity)
 
         new_member_id = NodeIdentity.node_id_from_public_key(new_member_key)
-        logger.log("COMETNET", f"Added member {new_member_id[:8]} to pool {pool_id}")
+        logger.log("NEBULANET", f"Added member {new_member_id[:8]} to pool {pool_id}")
         return True
 
     async def remove_member(
@@ -536,7 +536,7 @@ class PoolStore:
         await self.store_manifest(manifest, identity)
 
         logger.log(
-            "COMETNET", f"Removed member {member.node_id[:8]} from pool {pool_id}"
+            "NEBULANET", f"Removed member {member.node_id[:8]} from pool {pool_id}"
         )
         return True
 
@@ -594,7 +594,7 @@ class PoolStore:
             except Exception:
                 pass
 
-        logger.log("COMETNET", f"Left pool {pool_id}")
+        logger.log("NEBULANET", f"Left pool {pool_id}")
         return True
 
     async def promote_member(
@@ -622,7 +622,7 @@ class PoolStore:
         await self.store_manifest(manifest, identity)
 
         logger.log(
-            "COMETNET", f"Promoted {member.node_id[:8]} to admin in pool {pool_id}"
+            "NEBULANET", f"Promoted {member.node_id[:8]} to admin in pool {pool_id}"
         )
         return True
 
@@ -640,13 +640,13 @@ class PoolStore:
         """Subscribe to a pool (trust its members' torrents)."""
         self._subscriptions.add(pool_id)
         await self._save_subscriptions()
-        logger.log("COMETNET", f"Subscribed to pool {pool_id}")
+        logger.log("NEBULANET", f"Subscribed to pool {pool_id}")
 
     async def unsubscribe(self, pool_id: str) -> None:
         """Unsubscribe from a pool."""
         self._subscriptions.discard(pool_id)
         await self._save_subscriptions()
-        logger.log("COMETNET", f"Unsubscribed from pool {pool_id}")
+        logger.log("NEBULANET", f"Unsubscribed from pool {pool_id}")
 
     def is_contributor_trusted(
         self, contributor_key: str, pool_id: Optional[str] = None
@@ -721,7 +721,7 @@ class PoolStore:
         # Persist
         await self._save_invite(invite)
 
-        logger.log("COMETNET", f"Created invite for pool {pool_id}: {invite.to_link()}")
+        logger.log("NEBULANET", f"Created invite for pool {pool_id}: {invite.to_link()}")
         return invite
 
     def get_invites(self, pool_id: str) -> List[PoolInvite]:
@@ -742,7 +742,7 @@ class PoolStore:
 
             # Delete from memory
             del self._invites[pool_id][invite_code]
-            logger.log("COMETNET", f"Deleted invite {invite_code} from pool {pool_id}")
+            logger.log("NEBULANET", f"Deleted invite {invite_code} from pool {pool_id}")
             return True
         return False
 
@@ -805,7 +805,7 @@ class PoolStore:
         self._memberships.add(pool_id)
         await self._save_memberships()
 
-        logger.log("COMETNET", f"Joined pool {pool_id} via invite")
+        logger.log("NEBULANET", f"Joined pool {pool_id} via invite")
         return True
 
     # ==================== Persistence ====================
@@ -854,8 +854,8 @@ class PoolStore:
         self._subscriptions.clear()
 
         # Load from settings first
-        if settings.COMETNET_TRUSTED_POOLS:
-            self._subscriptions.update(settings.COMETNET_TRUSTED_POOLS)
+        if settings.NEBULANET_TRUSTED_POOLS:
+            self._subscriptions.update(settings.NEBULANET_TRUSTED_POOLS)
 
         # Then from file (can add more)
         subscriptions_file = self.pools_dir / "subscriptions.json"

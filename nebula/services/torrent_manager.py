@@ -19,18 +19,18 @@ from demagnetize.core import Demagnetizer
 from RTN import parse
 from torf import Magnet
 
-from comet.cometnet import CometNetService, get_active_backend
-from comet.cometnet.protocol import TorrentMetadata
-from comet.core.constants import TORRENT_TIMEOUT
-from comet.core.database import (IS_SQLITE, NULL_SCOPE_SENTINEL,
+from nebula.nebulanet import NebulaNetService, get_active_backend
+from nebula.nebulanet.protocol import TorrentMetadata
+from nebula.core.constants import TORRENT_TIMEOUT
+from nebula.core.database import (IS_SQLITE, NULL_SCOPE_SENTINEL,
                                  build_distinct_from_predicate,
                                  build_json_list_membership_predicate,
                                  build_upsert_assignments, encode_json_param,
                                  normalize_scope_value)
-from comet.core.logger import logger
-from comet.core.models import database, settings
-from comet.utils.formatting import normalize_info_hash
-from comet.utils.parsing import default_dump, ensure_multi_language, is_video
+from nebula.core.logger import logger
+from nebula.core.models import database, settings
+from nebula.utils.formatting import normalize_info_hash
+from nebula.utils.parsing import default_dump, ensure_multi_language, is_video
 
 TRACKER_PATTERN = re.compile(r"[&?]tr=([^&]+)")
 INFO_HASH_PATTERN = re.compile(r"btih:([a-fA-F0-9]{40}|[a-zA-Z0-9]{32})")
@@ -439,7 +439,7 @@ def _merge_torrent_updates(
     if incoming.sources:
         existing.sources = _dedupe_strings([*existing.sources, *incoming.sources])
     existing.parsed = _merge_parsed_payloads(existing.parsed, incoming.parsed)
-    existing.from_cometnet = existing.from_cometnet and incoming.from_cometnet
+    existing.from_nebulanet = existing.from_nebulanet and incoming.from_nebulanet
     if incoming.attempts > existing.attempts:
         existing.attempts = incoming.attempts
     return existing
@@ -458,7 +458,7 @@ def _construct_torrent_update(
     tracker: str | None,
     sources: list[str],
     parsed: dict,
-    from_cometnet: bool,
+    from_nebulanet: bool,
     attempts: int = 0,
 ) -> "_TorrentUpdate":
     season_norm = normalize_scope_value(season)
@@ -475,7 +475,7 @@ def _construct_torrent_update(
     item.tracker = tracker
     item.sources = sources
     item.parsed = parsed
-    item.from_cometnet = from_cometnet
+    item.from_nebulanet = from_nebulanet
     item.attempts = attempts
     item.season_norm = season_norm
     item.episode_norm = episode_norm
@@ -487,7 +487,7 @@ def _build_torrent_update_from_source(
     *,
     media_id: str,
     source: dict,
-    from_cometnet: bool,
+    from_nebulanet: bool,
     sources_cache: dict[int, list[str]] | None = None,
     parsed_cache: dict[int, dict] | None = None,
 ) -> "_TorrentUpdate | None":
@@ -518,7 +518,7 @@ def _build_torrent_update_from_source(
             source.get("parsed"),
             parsed_cache,
         ),
-        from_cometnet=from_cometnet,
+        from_nebulanet=from_nebulanet,
     )
 
 
@@ -542,12 +542,12 @@ def _build_torrent_update_from_metadata(
         tracker=metadata.tracker,
         sources=_dedupe_strings(metadata.sources),
         parsed=metadata.parsed or {},
-        from_cometnet=True,
+        from_nebulanet=True,
     )
 
 
 def _iter_torrent_updates_from_file_infos(
-    file_infos: Iterable[dict], *, media_id: str, from_cometnet: bool
+    file_infos: Iterable[dict], *, media_id: str, from_nebulanet: bool
 ) -> Iterator["_TorrentUpdate"]:
     sources_cache = {}
     parsed_cache = {}
@@ -555,7 +555,7 @@ def _iter_torrent_updates_from_file_infos(
         item = _build_torrent_update_from_source(
             media_id=media_id,
             source=file_info,
-            from_cometnet=from_cometnet,
+            from_nebulanet=from_nebulanet,
             sources_cache=sources_cache,
             parsed_cache=parsed_cache,
         )
@@ -576,7 +576,7 @@ class _TorrentUpdate:
     tracker: str | None
     sources: list[str]
     parsed: dict
-    from_cometnet: bool
+    from_nebulanet: bool
     attempts: int = 0
     season_norm: int = field(init=False)
     episode_norm: int = field(init=False)
@@ -659,7 +659,7 @@ def _iter_resolved_torrent_updates(
                 tracker=tracker,
                 sources=normalized_sources,
                 parsed=parsed_payload,
-                from_cometnet=False,
+                from_nebulanet=False,
             )
 
 
@@ -1052,7 +1052,7 @@ class TorrentUpdateQueue:
         return not self._stopping and isinstance(media_id, str) and bool(media_id)
 
     async def add_torrent_info(
-        self, file_info: dict, media_id: str | None = None, from_cometnet: bool = False
+        self, file_info: dict, media_id: str | None = None, from_nebulanet: bool = False
     ):
         if not self._can_accept_media_id(media_id):
             return
@@ -1061,7 +1061,7 @@ class TorrentUpdateQueue:
             _build_torrent_update_from_source(
                 media_id=media_id,
                 source=file_info,
-                from_cometnet=from_cometnet,
+                from_nebulanet=from_nebulanet,
             )
         )
 
@@ -1069,7 +1069,7 @@ class TorrentUpdateQueue:
         self,
         file_infos: list[dict],
         media_id: str | None = None,
-        from_cometnet: bool = False,
+        from_nebulanet: bool = False,
     ):
         if not file_infos or not self._can_accept_media_id(media_id):
             return
@@ -1078,7 +1078,7 @@ class TorrentUpdateQueue:
             _iter_torrent_updates_from_file_infos(
                 file_infos,
                 media_id=media_id,
-                from_cometnet=from_cometnet,
+                from_nebulanet=from_nebulanet,
             )
         )
 
@@ -1202,17 +1202,17 @@ class TorrentUpdateQueue:
         if backend is None:
             return
 
-        if isinstance(backend, CometNetService):
+        if isinstance(backend, NebulaNetService):
             metadata_batch = [
                 item.to_broadcast_metadata(updated_at)
                 for item in batch_items
-                if not item.from_cometnet
+                if not item.from_nebulanet
             ]
         else:
             metadata_batch = [
                 item.to_broadcast_payload(updated_at)
                 for item in batch_items
-                if not item.from_cometnet
+                if not item.from_nebulanet
             ]
         if not metadata_batch:
             return

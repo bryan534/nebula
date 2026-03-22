@@ -4,15 +4,15 @@ from fastapi import APIRouter, Cookie, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from comet.core.config_validation import config_check
-from comet.core.models import settings, web_config
-from comet.utils.cache import CachePolicies
-from comet.utils.signed_session import (derive_session_secret,
+from nebula.core.config_validation import config_check
+from nebula.core.models import settings, web_config
+from nebula.utils.cache import CachePolicies
+from nebula.utils.signed_session import (derive_session_secret,
                                         encode_signed_session,
                                         verify_signed_session)
 
 router = APIRouter()
-templates = Jinja2Templates("comet/templates")
+templates = Jinja2Templates("nebula/templates")
 CONFIGURE_SESSION_COOKIE = "configure_session"
 CONFIGURE_PAGE_PASSWORD = settings.CONFIGURE_PAGE_PASSWORD
 CONFIGURE_PAGE_PASSWORD_ENABLED = bool(CONFIGURE_PAGE_PASSWORD)

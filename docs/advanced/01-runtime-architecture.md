@@ -2,7 +2,7 @@
 
 ## Server Process Model
 
-Comet runs as a FastAPI app and starts through `python -m comet.main`.
+Nebula runs as a FastAPI app and starts through `python -m nebula.main`.
 
 Runtime mode:
 
@@ -29,18 +29,18 @@ At startup (`lifespan`):
 7. Periodic cleanup tasks start.
 8. Optional background scraper start.
 9. Optional DMM ingester start.
-10. CometNet startup:
-- Relay mode if `COMETNET_RELAY_URL` is set.
-- Integrated mode if `COMETNET_ENABLED=True`.
+10. NebulaNet startup:
+- Relay mode if `NEBULANET_RELAY_URL` is set.
+- Integrated mode if `NEBULANET_ENABLED=True`.
 11. Indexer manager background loop start.
 
 At shutdown, the reverse order is applied (tasks cancelled/stopped, network clients closed, DB disconnected, executor shutdown).
 
 ## Routing Model
 
-Routers are mounted in `comet/api/app.py`.
+Routers are mounted in `nebula/api/app.py`.
 
-- Base routes: health, configure, admin, kodi, cometnet.
+- Base routes: health, configure, admin, kodi, nebulanet.
 - Stremio routes: manifest, stream, playback, debrid-sync, chilllink.
 - If API prefix protection is active, Stremio endpoints are served under `/s/<token>/...`.
 

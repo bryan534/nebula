@@ -3,13 +3,13 @@ from typing import Optional
 
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 
-from comet.cometnet.crypto import NodeIdentity
-from comet.cometnet.keystore import PublicKeyStore
-from comet.cometnet.protocol import BaseMessage, TorrentMetadata
-from comet.cometnet.reputation import ReputationStore
-from comet.cometnet.utils import run_in_executor
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.nebulanet.crypto import NodeIdentity
+from nebula.nebulanet.keystore import PublicKeyStore
+from nebula.nebulanet.protocol import BaseMessage, TorrentMetadata
+from nebula.nebulanet.reputation import ReputationStore
+from nebula.nebulanet.utils import run_in_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 def verify_message_signature_sync(
@@ -49,11 +49,11 @@ async def validate_message_security(
 
     # 2. Verify timestamp (Replay/Drift check)
     now = time.time()
-    if message.timestamp > now + settings.COMETNET_GOSSIP_VALIDATION_FUTURE_TOLERANCE:
+    if message.timestamp > now + settings.NEBULANET_GOSSIP_VALIDATION_FUTURE_TOLERANCE:
         logger.debug(f"Rejecting message from {sender_id[:8]}: timestamp in future")
         return False
 
-    if message.timestamp < now - settings.COMETNET_GOSSIP_VALIDATION_PAST_TOLERANCE:
+    if message.timestamp < now - settings.NEBULANET_GOSSIP_VALIDATION_PAST_TOLERANCE:
         logger.debug(f"Rejecting message from {sender_id[:8]}: timestamp too old")
         return False
 

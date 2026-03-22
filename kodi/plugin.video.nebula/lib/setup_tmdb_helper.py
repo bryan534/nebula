@@ -5,7 +5,7 @@ import xbmcaddon
 import xbmcgui
 import xbmcvfs
 
-ADDON_ID = "plugin.video.comet"
+ADDON_ID = "plugin.video.nebula"
 TMDB_HELPER_ADDON_ID = "plugin.video.themoviedb.helper"
 
 
@@ -23,7 +23,7 @@ def setup_tmdb_helper_player():
         xbmcaddon.Addon(TMDB_HELPER_ADDON_ID)
     except Exception:
         dialog.notification(
-            "Comet",
+            "Nebula",
             "TMDB Helper is not installed",
             xbmcgui.NOTIFICATION_ERROR,
         )
@@ -37,8 +37,8 @@ def setup_tmdb_helper_player():
         home_path,
         "userdata/addon_data/plugin.video.themoviedb.helper/players",
     )
-    player_file = os.path.join(players_path, "comet.select.json")
-    source_file = os.path.join(addon_path, "resources/player", "comet.select.json")
+    player_file = os.path.join(players_path, "nebula.select.json")
+    source_file = os.path.join(addon_path, "resources/player", "nebula.select.json")
 
     if not xbmcvfs.exists(players_path):
         xbmcvfs.mkdirs(players_path)
@@ -46,7 +46,7 @@ def setup_tmdb_helper_player():
     player_exists = xbmcvfs.exists(player_file)
     if player_exists and read_text_file(source_file) == read_text_file(player_file):
         dialog.notification(
-            "Comet",
+            "Nebula",
             "TMDB Helper player already installed",
             xbmcgui.NOTIFICATION_INFO,
         )
@@ -57,7 +57,7 @@ def setup_tmdb_helper_player():
 
     if xbmcvfs.copy(source_file, player_file):
         dialog.notification(
-            "Comet",
+            "Nebula",
             "TMDB Helper player updated"
             if player_exists
             else "TMDB Helper player installed",
@@ -67,7 +67,7 @@ def setup_tmdb_helper_player():
 
     xbmc.log("Failed to copy TMDB Helper player file", xbmc.LOGERROR)
     dialog.notification(
-        "Comet",
+        "Nebula",
         "Failed to install TMDB Helper player",
         xbmcgui.NOTIFICATION_ERROR,
     )

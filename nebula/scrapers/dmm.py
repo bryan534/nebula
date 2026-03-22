@@ -1,7 +1,7 @@
-from comet.core.logger import logger
-from comet.core.models import database, settings
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
+from nebula.core.logger import logger
+from nebula.core.models import database, settings
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
 
 
 class DMMScraper(BaseScraper):

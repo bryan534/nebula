@@ -3,11 +3,11 @@ import asyncio
 import orjson
 from RTN import ParsedData
 
-from comet.debrid.manager import retrieve_debrid_availability
-from comet.services.debrid_cache import (cache_availability,
+from nebula.debrid.manager import retrieve_debrid_availability
+from nebula.services.debrid_cache import (cache_availability,
                                          get_cached_availability,
                                          get_cached_availability_any_service)
-from comet.utils.parsing import ensure_multi_language
+from nebula.utils.parsing import ensure_multi_language
 
 
 class DebridService:

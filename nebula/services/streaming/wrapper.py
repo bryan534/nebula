@@ -3,7 +3,7 @@ import mediaflow_proxy.utils.http_utils
 from mediaflow_proxy.utils.http_utils import EnhancedStreamingResponse
 from starlette.background import BackgroundTask
 
-from comet.services.bandwidth import bandwidth_monitor
+from nebula.services.bandwidth import bandwidth_monitor
 
 
 class BandwidthMonitoringStreamingResponse(EnhancedStreamingResponse):

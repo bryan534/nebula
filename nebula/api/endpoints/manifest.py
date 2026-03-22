@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request
 
-from comet.core.config_validation import config_check
-from comet.core.models import settings
-from comet.debrid.manager import build_addon_name
-from comet.utils.cache import (CachedJSONResponse, CachePolicies,
+from nebula.core.config_validation import config_check
+from nebula.core.models import settings
+from nebula.debrid.manager import build_addon_name
+from nebula.utils.cache import (CachedJSONResponse, CachePolicies,
                                check_etag_match, generate_etag,
                                not_modified_response)
 
@@ -36,14 +36,14 @@ async def manifest(request: Request, b64config: str = None):
             }
         ],
         "types": ["movie", "series", "anime", "other"],
-        "logo": "https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/icon.png",
-        "background": "https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/background.png",
+        "logo": "https://raw.githubusercontent.com/g0ldyy/nebula/refs/heads/main/nebula/assets/icon.png",
+        "background": "https://raw.githubusercontent.com/g0ldyy/nebula/refs/heads/main/nebula/assets/background.png",
         "behaviorHints": {"configurable": True, "configurationRequired": False},
     }
 
     config = config_check(b64config, strict_b64config=True)
     if not config:
-        base_manifest["name"] = "❌ | Comet"
+        base_manifest["name"] = "❌ | Nebula"
         base_manifest["description"] = (
             f"⚠️ OBSOLETE CONFIGURATION, PLEASE RE-CONFIGURE ON {request.url.scheme}://{request.url.netloc} ⚠️"
         )

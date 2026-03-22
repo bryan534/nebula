@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comet - Kodi Repository</title>
+    <title>Nebula - Kodi Repository</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -179,16 +179,16 @@
     <div class="container">
         <div class="logo-wrapper">
             <div class="logo-glow"></div>
-            <img src="https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/icon.png" alt="Comet" class="logo">
+            <img src="https://raw.githubusercontent.com/g0ldyy/nebula/refs/heads/main/nebula/assets/icon.png" alt="Nebula" class="logo">
         </div>
         
-        <h1>Comet</h1>
+        <h1>Nebula</h1>
         <p class="tagline">Kodi Repository & Add-on</p>
 
         <div class="grid">
             <a href="ADDON_URL" class="card">
                 <div class="card-info">
-                    <span class="card-name">Comet Add-on</span>
+                    <span class="card-name">Nebula Add-on</span>
                     <span class="card-desc">Video Plugin</span>
                 </div>
                 <div class="badge">vV_ADDON</div>
@@ -196,7 +196,7 @@
 
             <a href="REPO_URL" class="card">
                 <div class="card-info">
-                    <span class="card-name">Comet Repository</span>
+                    <span class="card-name">Nebula Repository</span>
                     <span class="card-desc">Auto-updates</span>
                 </div>
                 <div class="badge">vV_REPO</div>

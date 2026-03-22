@@ -8,7 +8,7 @@ import aiohttp
 from loguru import logger
 
 GITHUB_API_TIMEOUT = 10
-GITHUB_REPO = "g0ldyy/comet"
+GITHUB_REPO = "g0ldyy/nebula"
 
 
 @dataclass
@@ -43,9 +43,9 @@ class UpdateManager:
         if cls._version_info:
             return cls._version_info
 
-        docker_commit = os.getenv("COMET_COMMIT_HASH")
-        docker_date = os.getenv("COMET_BUILD_DATE")
-        docker_branch = os.getenv("COMET_BRANCH", "main")
+        docker_commit = os.getenv("NEBULA_COMMIT_HASH")
+        docker_date = os.getenv("NEBULA_BUILD_DATE")
+        docker_branch = os.getenv("NEBULA_BRANCH", "main")
 
         if docker_commit:
             cls._version_info = VersionInfo(

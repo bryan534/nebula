@@ -9,29 +9,29 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-from comet.api.endpoints import (admin, base, chilllink, cometnet, cometnet_ui,
+from nebula.api.endpoints import (admin, base, chilllink, nebulanet, nebulanet_ui,
                                  config, debrid_sync, kodi, manifest, playback)
-from comet.api.endpoints import stream as streams_router
-from comet.background_scraper.worker import background_scraper
-from comet.cometnet.manager import init_cometnet_service
-from comet.cometnet.relay import init_relay, stop_relay
-from comet.core.database import (cleanup_expired_kodi_setup_codes,
+from nebula.api.endpoints import stream as streams_router
+from nebula.background_scraper.worker import background_scraper
+from nebula.nebulanet.manager import init_nebulanet_service
+from nebula.nebulanet.relay import init_relay, stop_relay
+from nebula.core.database import (cleanup_expired_kodi_setup_codes,
                                  cleanup_expired_locks, setup_database,
                                  teardown_database)
-from comet.core.execution import setup_executor, shutdown_executor
-from comet.core.logger import logger
-from comet.core.models import STREMIO_API_PREFIX, settings
-from comet.services.anime import anime_mapper
-from comet.services.bandwidth import bandwidth_monitor
-from comet.services.dmm_ingester import dmm_ingester
-from comet.services.indexer_manager import indexer_manager
-from comet.services.torrent_manager import (add_torrent_queue,
+from nebula.core.execution import setup_executor, shutdown_executor
+from nebula.core.logger import logger
+from nebula.core.models import STREMIO_API_PREFIX, settings
+from nebula.services.anime import anime_mapper
+from nebula.services.bandwidth import bandwidth_monitor
+from nebula.services.dmm_ingester import dmm_ingester
+from nebula.services.indexer_manager import indexer_manager
+from nebula.services.torrent_manager import (add_torrent_queue,
                                             check_torrents_exist,
                                             torrent_update_queue)
-from comet.services.trackers import download_best_trackers
-from comet.utils.http_client import http_client_manager
-from comet.utils.memory import periodic_memory_trim
-from comet.utils.network_manager import network_manager
+from nebula.services.trackers import download_best_trackers
+from nebula.utils.http_client import http_client_manager
+from nebula.utils.memory import periodic_memory_trim
+from nebula.utils.network_manager import network_manager
 
 
 class LoguruMiddleware(BaseHTTPMiddleware):
@@ -92,31 +92,31 @@ async def lifespan(app: FastAPI):
     if settings.DMM_INGEST_ENABLED:
         dmm_ingester_task = asyncio.create_task(dmm_ingester.start())
 
-    # Initialize CometNet
-    cometnet_service = None
-    cometnet_relay = None
+    # Initialize NebulaNet
+    nebulanet_service = None
+    nebulanet_relay = None
 
-    if settings.COMETNET_RELAY_URL:
-        cometnet_relay = await init_relay(
-            settings.COMETNET_RELAY_URL, api_key=settings.COMETNET_API_KEY
+    if settings.NEBULANET_RELAY_URL:
+        nebulanet_relay = await init_relay(
+            settings.NEBULANET_RELAY_URL, api_key=settings.NEBULANET_API_KEY
         )
 
-    elif settings.COMETNET_ENABLED:
-        cometnet_service = init_cometnet_service(
+    elif settings.NEBULANET_ENABLED:
+        nebulanet_service = init_nebulanet_service(
             enabled=True,
-            listen_port=settings.COMETNET_LISTEN_PORT,
-            bootstrap_nodes=settings.COMETNET_BOOTSTRAP_NODES,
-            manual_peers=settings.COMETNET_MANUAL_PEERS,
-            max_peers=settings.COMETNET_MAX_PEERS,
-            min_peers=settings.COMETNET_MIN_PEERS,
+            listen_port=settings.NEBULANET_LISTEN_PORT,
+            bootstrap_nodes=settings.NEBULANET_BOOTSTRAP_NODES,
+            manual_peers=settings.NEBULANET_MANUAL_PEERS,
+            max_peers=settings.NEBULANET_MAX_PEERS,
+            min_peers=settings.NEBULANET_MIN_PEERS,
         )
 
         # Set callback to save torrents received from the network
-        cometnet_service.set_save_torrent_callback(
+        nebulanet_service.set_save_torrent_callback(
             torrent_update_queue.add_network_torrent
         )
-        cometnet_service.set_check_torrents_exist_callback(check_torrents_exist)
-        await cometnet_service.start()
+        nebulanet_service.set_check_torrents_exist_callback(check_torrents_exist)
+        await nebulanet_service.start()
 
     # Start indexer manager
     indexer_manager_task = asyncio.create_task(indexer_manager.run())
@@ -163,10 +163,10 @@ async def lifespan(app: FastAPI):
         if settings.PROXY_DEBRID_STREAM:
             await bandwidth_monitor.shutdown()
 
-        if cometnet_service:
-            await cometnet_service.stop()
+        if nebulanet_service:
+            await nebulanet_service.stop()
 
-        if cometnet_relay:
+        if nebulanet_relay:
             await stop_relay()
 
         await add_torrent_queue.stop()
@@ -186,7 +186,7 @@ tags_metadata = [
     },
     {
         "name": "Configuration",
-        "description": "Endpoints for configuring Comet.",
+        "description": "Endpoints for configuring Nebula.",
     },
     {
         "name": "Stremio",
@@ -207,7 +207,7 @@ tags_metadata = [
 ]
 
 app = FastAPI(
-    title="Comet",
+    title="Nebula",
     summary="Stremio's fastest torrent/debrid search add-on.",
     lifespan=lifespan,
     docs_url=None if STREMIO_API_PREFIX else "/docs",
@@ -226,13 +226,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="comet/templates"), name="static")
+app.mount("/static", StaticFiles(directory="nebula/templates"), name="static")
 
 app.include_router(base.router)
 app.include_router(config.router)
 app.include_router(admin.router)
-app.include_router(cometnet.router)
-app.include_router(cometnet_ui.router)
+app.include_router(nebulanet.router)
+app.include_router(nebulanet_ui.router)
 app.include_router(kodi.router)
 
 if STREMIO_API_PREFIX:

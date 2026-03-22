@@ -3,9 +3,9 @@ from datetime import datetime
 
 import aiohttp
 
-from comet.core.logger import logger
-from comet.core.models import database, settings
-from comet.metadata.tmdb import TMDBApi
+from nebula.core.logger import logger
+from nebula.core.models import database, settings
+from nebula.metadata.tmdb import TMDBApi
 
 _CINEMETA_SERIES_META_URL = "https://v3-cinemeta.strem.io/meta/series/{series_id}.json"
 

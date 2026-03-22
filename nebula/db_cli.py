@@ -4,10 +4,10 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 
-from comet.core.database import setup_database
-from comet.core.db_manager import DatabaseManager
-from comet.core.logger import logger
-from comet.core.models import database
+from nebula.core.database import setup_database
+from nebula.core.db_manager import DatabaseManager
+from nebula.core.logger import logger
+from nebula.core.models import database
 
 
 async def list_tables_command(db_manager: DatabaseManager):
@@ -163,27 +163,27 @@ def parse_table_list(table_str: str):
 
 async def main():
     parser = argparse.ArgumentParser(
-        description="Comet Database Import/Export Tool",
+        description="Nebula Database Import/Export Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # List all tables
-  python -m comet.db_cli list-tables
+  python -m nebula.db_cli list-tables
   
   # Show table info
-  python -m comet.db_cli info --table torrents
+  python -m nebula.db_cli info --table torrents
   
   # Export specific tables
-  python -m comet.db_cli export --tables torrents,media_metadata_cache --output ./backup/
+  python -m nebula.db_cli export --tables torrents,media_metadata_cache --output ./backup/
   
   # Export all tables with compression
-  python -m comet.db_cli export --output ./backup/
+  python -m nebula.db_cli export --output ./backup/
   
   # Import specific tables
-  python -m comet.db_cli import --input ./backup/ --tables torrents
+  python -m nebula.db_cli import --input ./backup/ --tables torrents
   
   # Import all tables (parallel disabled for safety)
-  python -m comet.db_cli import --input ./backup/ --no-parallel
+  python -m nebula.db_cli import --input ./backup/ --no-parallel
         """,
     )
 

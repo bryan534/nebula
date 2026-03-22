@@ -1,17 +1,17 @@
 services:
-  comet:
-    container_name: comet
-    image: g0ldyy/comet
+  nebula:
+    container_name: nebula
+    image: g0ldyy/nebula
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
       DATABASE_TYPE: ${DATABASE_TYPE:-postgresql}
-      DATABASE_URL: ${DATABASE_URL:-comet:comet@postgres:5432/comet}
+      DATABASE_URL: ${DATABASE_URL:-nebula:nebula@postgres:5432/nebula}
     env_file:
-      - .env
+      - ../.env
     volumes:
-      - comet_data:/app/data
+      - nebula_data:/app/data
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/health"]
       interval: 5s
@@ -23,13 +23,13 @@ services:
         condition: service_healthy
 
   postgres:
-    container_name: comet-postgres
+    container_name: nebula-postgres
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: comet
-      POSTGRES_PASSWORD: comet
-      POSTGRES_DB: comet
+      POSTGRES_USER: nebula
+      POSTGRES_PASSWORD: nebula
+      POSTGRES_DB: nebula
     command:
       - "postgres"
       - "-c"
@@ -53,11 +53,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U comet -d comet"]
+      test: ["CMD-SHELL", "pg_isready -U nebula -d nebula"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  comet_data:
+  nebula_data:
   postgres_data:

@@ -6,10 +6,10 @@ from contextlib import asynccontextmanager
 import aiohttp
 import orjson
 
-from comet.core.database import backend_lock, database
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.utils.memory import trim_process_memory
+from nebula.core.database import backend_lock, database
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.utils.memory import trim_process_memory
 
 _PROVIDER_URL_PATTERNS = (
     ("anilist.co/anime/", "anilist"),
@@ -339,7 +339,7 @@ class AnimeMapper:
         self.loaded = True
         if log_loaded:
             logger.log(
-                "COMET",
+                "NEBULA",
                 f"✅ Anime mapping loaded from database: {count} entries, {len(self._kitsu_mapping_cache)} Kitsu-IMDB mappings",
             )
         return True
@@ -371,7 +371,7 @@ class AnimeMapper:
                         return True
 
                     async def _download_json(url: str, label: str):
-                        logger.log("COMET", f"Downloading anime mapping ({label})...")
+                        logger.log("NEBULA", f"Downloading anime mapping ({label})...")
                         async with session.get(url) as response:
                             return response.status, await response.read()
 
@@ -423,7 +423,7 @@ class AnimeMapper:
 
                     self.loaded = True
                     logger.log(
-                        "COMET",
+                        "NEBULA",
                         f"✅ Anime mapping loaded: {total_entries} entries, {len(self._kitsu_mapping_cache)} Kitsu-IMDB mappings cached",
                     )
 

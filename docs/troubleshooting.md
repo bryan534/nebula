@@ -28,7 +28,7 @@ Provider auth error, non-premium account, invalid API token, or provider-side er
 
 - Recheck debrid API keys.
 - Validate selected debrid service in your config.
-- Check Comet logs and status video key.
+- Check Nebula logs and status video key.
 
 ## Stremio Install Fails with HTTP URL
 
@@ -42,8 +42,8 @@ Stremio expects HTTPS for non-local add-on URLs. HTTP is supported only for loca
 
 ## Action
 
-- If Comet is remote/public, put it behind a reverse proxy with HTTPS and reinstall from the new URL.
-- If Comet is local on the same machine as Stremio Desktop, use `http://127.0.0.1:8000` or `http://localhost:8000`.
+- If Nebula is remote/public, put it behind a reverse proxy with HTTPS and reinstall from the new URL.
+- If Nebula is local on the same machine as Stremio Desktop, use `http://127.0.0.1:8000` or `http://localhost:8000`.
 
 ## Proxy Stream Limit Reached
 
@@ -74,25 +74,25 @@ SQLite backend with multiple workers or heavy background operations.
 
 Use PostgreSQL for production workloads.
 
-## CometNet Start Failures
+## NebulaNet Start Failures
 
 ## Symptom
 
-CometNet exits at startup with critical log.
+NebulaNet exits at startup with critical log.
 
 ## Common Causes
 
 - Integrated mode with `FASTAPI_WORKERS > 1`
-- Invalid or missing `COMETNET_ADVERTISE_URL` on public deployments
+- Invalid or missing `NEBULANET_ADVERTISE_URL` on public deployments
 - Reachability check failure
 - Time sync check failure
 
 ## Action
 
-- For multi-worker deployments, use relay mode (`COMETNET_RELAY_URL`).
+- For multi-worker deployments, use relay mode (`NEBULANET_RELAY_URL`).
 - Set a reachable `wss://` advertise URL.
 - Fix reverse-proxy websocket forwarding.
-- Sync system clock or adjust CometNet check options intentionally.
+- Sync system clock or adjust NebulaNet check options intentionally.
 
 ## Background Scraper Not Running
 

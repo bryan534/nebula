@@ -11,7 +11,7 @@ Production recommendation from runtime logs and code path: PostgreSQL for concur
 
 ## Startup Behavior
 
-At startup, Comet:
+At startup, Nebula:
 
 1. connects database(s)
 2. applies additive schema migrations tracked in `schema_migrations`
@@ -34,14 +34,14 @@ Configured via `DATABASE_READ_REPLICA_URLS`.
 
 ## SQLite Notes
 
-When SQLite is used, two layers of PRAGMA configuration apply. Per-connection PRAGMAs (`foreign_keys` and `busy_timeout`) are enforced on each acquired connection via the acquire hook in `comet.core.models`. Broader PRAGMA tuning (`journal_mode`, `synchronous`, `mmap_size`, `page_size`, `cache_size`, etc.) is configured once at startup in the database initialization code in `comet.core.database`. Core features still work, but high-concurrency operation is limited compared with PostgreSQL.
+When SQLite is used, two layers of PRAGMA configuration apply. Per-connection PRAGMAs (`foreign_keys` and `busy_timeout`) are enforced on each acquired connection via the acquire hook in `nebula.core.models`. Broader PRAGMA tuning (`journal_mode`, `synchronous`, `mmap_size`, `page_size`, `cache_size`, etc.) is configured once at startup in the database initialization code in `nebula.core.database`. Core features still work, but high-concurrency operation is limited compared with PostgreSQL.
 
 ## DB Import/Export CLI
 
 Entry point:
 
 ```bash
-python -m comet.db_cli
+python -m nebula.db_cli
 ```
 
 Supported commands:

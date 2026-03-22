@@ -7,18 +7,18 @@ from fastapi import APIRouter, Cookie, Form, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from comet.background_scraper.worker import background_scraper
-from comet.core.logger import log_capture, logger
-from comet.core.models import database, settings
-from comet.services.bandwidth import bandwidth_monitor
-from comet.utils.formatting import format_bytes
-from comet.utils.signed_session import (derive_session_secret,
+from nebula.background_scraper.worker import background_scraper
+from nebula.core.logger import log_capture, logger
+from nebula.core.models import database, settings
+from nebula.services.bandwidth import bandwidth_monitor
+from nebula.utils.formatting import format_bytes
+from nebula.utils.signed_session import (derive_session_secret,
                                         encode_signed_session,
                                         verify_signed_session)
-from comet.utils.update import UpdateManager
+from nebula.utils.update import UpdateManager
 
 router = APIRouter()
-templates = Jinja2Templates("comet/templates")
+templates = Jinja2Templates("nebula/templates")
 background_scraper_start_lock = asyncio.Lock()
 ADMIN_SESSION_COOKIE = "admin_session"
 ADMIN_SESSION_TTL = max(60, settings.ADMIN_DASHBOARD_SESSION_TTL)
@@ -112,7 +112,7 @@ async def admin_login(
     "/admin/api/update-check",
     tags=["Admin"],
     summary="Check for Updates",
-    description="Checks if a new version of Comet is available.",
+    description="Checks if a new version of Nebula is available.",
 )
 async def update_check(
     admin_session: str = Cookie(None, description="Admin session token"),

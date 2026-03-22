@@ -32,7 +32,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: g0ldyy/comet
+  IMAGE_NAME: g0ldyy/nebula
 
 jobs:
   build-and-push:
@@ -75,6 +75,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            COMET_COMMIT_HASH=${{ github.sha }}
-            COMET_BUILD_DATE=${{ steps.date.outputs.date }}
+            NEBULA_COMMIT_HASH=${{ github.sha }}
+            NEBULA_BUILD_DATE=${{ steps.date.outputs.date }}
             ${{ inputs.build-args }}

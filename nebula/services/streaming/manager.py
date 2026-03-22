@@ -5,11 +5,11 @@ import mediaflow_proxy.handlers
 import mediaflow_proxy.utils.http_utils
 from starlette.background import BackgroundTask
 
-from comet.core.logger import logger
-from comet.core.models import database, settings
-from comet.services.bandwidth import bandwidth_monitor
-from comet.services.status_video import build_status_video_response
-from comet.services.streaming.wrapper import monitored_handle_stream_request
+from nebula.core.logger import logger
+from nebula.core.models import database, settings
+from nebula.services.bandwidth import bandwidth_monitor
+from nebula.services.status_video import build_status_video_response
+from nebula.services.streaming.wrapper import monitored_handle_stream_request
 
 
 async def on_stream_end(connection_id: str, ip: str):

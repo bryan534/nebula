@@ -7,8 +7,8 @@ from urllib.parse import urlparse, urlunparse
 import aiohttp
 from curl_cffi.requests import AsyncSession as CurlSession
 
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 def resolve_proxy_url(proxy_url: Optional[str]):

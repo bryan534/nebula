@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Request
 
-from comet.core.config_validation import config_check
-from comet.core.logger import logger
-from comet.debrid.manager import get_debrid_credentials
-from comet.services.debrid_account_scraper import trigger_account_snapshot_sync
-from comet.services.status_video import build_status_video_response
-from comet.utils.http_client import http_client_manager
-from comet.utils.network import get_client_ip
-from comet.utils.parsing import parse_optional_int
+from nebula.core.config_validation import config_check
+from nebula.core.logger import logger
+from nebula.debrid.manager import get_debrid_credentials
+from nebula.services.debrid_account_scraper import trigger_account_snapshot_sync
+from nebula.services.status_video import build_status_video_response
+from nebula.utils.http_client import http_client_manager
+from nebula.utils.network import get_client_ip
+from nebula.utils.parsing import parse_optional_int
 
 router = APIRouter()
 

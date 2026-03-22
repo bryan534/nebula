@@ -2,18 +2,18 @@ import asyncio
 import time
 from datetime import datetime
 
-from comet.core.database import (_debrid_account_snapshot_ttl,
+from nebula.core.database import (_debrid_account_snapshot_ttl,
                                  build_json_list_membership_predicate,
                                  database, encode_json_param)
-from comet.core.execution import get_executor
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.debrid.manager import build_account_key_hash
-from comet.debrid.stremthru import StremThru
-from comet.services.filtering import filter_worker
-from comet.services.lock import DistributedLock
-from comet.services.torrent_manager import torrent_update_queue
-from comet.utils.parsing import parsed_matches_target
+from nebula.core.execution import get_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.debrid.manager import build_account_key_hash
+from nebula.debrid.stremthru import StremThru
+from nebula.services.filtering import filter_worker
+from nebula.services.lock import DistributedLock
+from nebula.services.torrent_manager import torrent_update_queue
+from nebula.utils.parsing import parsed_matches_target
 
 _SYNC_LOCK_PREFIX = "debrid-account-sync"
 _CACHED_STATUSES = frozenset({"cached", "downloaded"})

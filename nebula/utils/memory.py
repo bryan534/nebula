@@ -7,7 +7,7 @@ from ctypes.util import find_library
 from functools import lru_cache
 from typing import Optional
 
-from comet.core.logger import logger
+from nebula.core.logger import logger
 
 
 def _env_contains(name: str, needle: str) -> bool:

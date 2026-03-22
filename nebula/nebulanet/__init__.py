@@ -1,26 +1,26 @@
 """
-CometNet - Decentralized P2P Network for Comet Instances
+NebulaNet - Decentralized P2P Network for Nebula Instances
 
-This package implements a gossip-based P2P network that allows Comet instances
+This package implements a gossip-based P2P network that allows Nebula instances
 to share torrent metadata automatically across the network.
 """
 
 from typing import Optional
 
-from comet.cometnet.interface import CometNetBackend
-from comet.cometnet.manager import CometNetService, get_cometnet_service
-from comet.cometnet.relay import CometNetRelay, get_relay
+from nebula.nebulanet.interface import NebulaNetBackend
+from nebula.nebulanet.manager import NebulaNetService, get_nebulanet_service
+from nebula.nebulanet.relay import NebulaNetRelay, get_relay
 
-__all__ = ["CometNetService", "CometNetRelay", "CometNetBackend", "get_active_backend"]
+__all__ = ["NebulaNetService", "NebulaNetRelay", "NebulaNetBackend", "get_active_backend"]
 
 
-def get_active_backend() -> Optional[CometNetBackend]:
+def get_active_backend() -> Optional[NebulaNetBackend]:
     """
-    Get the active CometNet backend (either local service or relay).
+    Get the active NebulaNet backend (either local service or relay).
     Returns the backend instance if running, otherwise None.
     """
     # Try local service first
-    service = get_cometnet_service()
+    service = get_nebulanet_service()
     if service and service.running:
         return service
 

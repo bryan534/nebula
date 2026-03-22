@@ -2,10 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Query, Request
 
-from comet.api.endpoints.stream import stream as get_streams
-from comet.core.config_validation import config_check
-from comet.core.models import settings
-from comet.debrid.manager import build_addon_name
+from nebula.api.endpoints.stream import stream as get_streams
+from nebula.core.config_validation import config_check
+from nebula.core.models import settings
+from nebula.debrid.manager import build_addon_name
 
 router = APIRouter()
 
@@ -32,7 +32,7 @@ async def chilllink_manifest(request: Request, b64config: str = None):
         "supported_endpoints": {"feeds": None, "streams": "/streams"},
         "name": build_addon_name(settings.ADDON_NAME, config)
         if config
-        else "❌ | Comet",
+        else "❌ | Nebula",
     }
 
     if not config:
@@ -69,9 +69,9 @@ async def chilllink_streams(
         return {
             "sources": [
                 {
-                    "id": "comet.fast",
-                    "title": "Configuration is invalid. Please reconfigure Comet.",
-                    "url": "https://comet.feels.legal",
+                    "id": "nebula.fast",
+                    "title": "Configuration is invalid. Please reconfigure Nebula.",
+                    "url": "https://nebula.feels.legal",
                     "metadata": [],
                 }
             ]
@@ -83,9 +83,9 @@ async def chilllink_streams(
         return {
             "sources": [
                 {
-                    "id": "comet.fast",
-                    "title": "You need to configure a debrid service to use Comet in Chillio.",
-                    "url": "https://comet.feels.legal",
+                    "id": "nebula.fast",
+                    "title": "You need to configure a debrid service to use Nebula in Chillio.",
+                    "url": "https://nebula.feels.legal",
                     "metadata": [],
                 }
             ]

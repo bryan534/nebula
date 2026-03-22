@@ -1,4 +1,4 @@
-KODI_META_KEY = "cometKodiMetaV1"
+KODI_META_KEY = "nebulaKodiMetaV1"
 
 _FIELDS = (
     "width",

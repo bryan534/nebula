@@ -1,7 +1,7 @@
 import base64
 
-from comet.core.models import settings
-from comet.utils.parsing import associate_urls_credentials
+from nebula.core.models import settings
+from nebula.utils.parsing import associate_urls_credentials
 
 
 class AIOStreamsConfig:

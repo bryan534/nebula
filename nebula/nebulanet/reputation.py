@@ -1,5 +1,5 @@
 """
-CometNet Reputation Module
+NebulaNet Reputation Module
 
 Implements the reputation system for tracking peer trustworthiness.
 """
@@ -8,8 +8,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Dict, Optional
 
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 @dataclass
@@ -18,7 +18,7 @@ class PeerReputation:
 
     node_id: str
     reputation: float = field(
-        default_factory=lambda: settings.COMETNET_REPUTATION_INITIAL
+        default_factory=lambda: settings.NEBULANET_REPUTATION_INITIAL
     )
     first_seen: float = field(default_factory=time.time)
     last_seen: float = field(default_factory=time.time)
@@ -37,8 +37,8 @@ class PeerReputation:
         """Returns the reputation bonus from anciennety."""
         return min(
             self.anciennety_days
-            * settings.COMETNET_REPUTATION_BONUS_PER_DAY_ANCIENNETY,
-            settings.COMETNET_REPUTATION_BONUS_MAX_ANCIENNETY,
+            * settings.NEBULANET_REPUTATION_BONUS_PER_DAY_ANCIENNETY,
+            settings.NEBULANET_REPUTATION_BONUS_MAX_ANCIENNETY,
         )
 
     @property
@@ -47,7 +47,7 @@ class PeerReputation:
         if self.is_blacklisted:
             return 0.0
         return min(
-            self.reputation + self.anciennety_bonus, settings.COMETNET_REPUTATION_MAX
+            self.reputation + self.anciennety_bonus, settings.NEBULANET_REPUTATION_MAX
         )
 
     @property
@@ -56,9 +56,9 @@ class PeerReputation:
         if self.is_blacklisted:
             return "blacklisted"
         score = self.effective_reputation
-        if score < settings.COMETNET_REPUTATION_THRESHOLD_UNTRUSTED:
+        if score < settings.NEBULANET_REPUTATION_THRESHOLD_UNTRUSTED:
             return "untrusted"
-        elif score < settings.COMETNET_REPUTATION_THRESHOLD_TRUSTED:
+        elif score < settings.NEBULANET_REPUTATION_THRESHOLD_TRUSTED:
             return "neutral"
         else:
             return "trusted"
@@ -68,7 +68,7 @@ class PeerReputation:
         return (
             not self.is_blacklisted
             and self.effective_reputation
-            >= settings.COMETNET_REPUTATION_THRESHOLD_TRUSTED
+            >= settings.NEBULANET_REPUTATION_THRESHOLD_TRUSTED
         )
 
     def is_acceptable(self) -> bool:
@@ -76,7 +76,7 @@ class PeerReputation:
         return (
             not self.is_blacklisted
             and self.effective_reputation
-            >= settings.COMETNET_REPUTATION_THRESHOLD_UNTRUSTED
+            >= settings.NEBULANET_REPUTATION_THRESHOLD_UNTRUSTED
         )
 
     def update_seen(self) -> None:
@@ -87,37 +87,37 @@ class PeerReputation:
         """Add valid contribution(s) and update reputation."""
         self.valid_contributions += count
         self._adjust_reputation(
-            settings.COMETNET_REPUTATION_BONUS_VALID_CONTRIBUTION * count
+            settings.NEBULANET_REPUTATION_BONUS_VALID_CONTRIBUTION * count
         )
 
     def add_invalid_contribution(self, count: int = 1) -> None:
         """Add invalid contribution(s) and update reputation."""
         self.invalid_contributions += count
         self._adjust_reputation(
-            -settings.COMETNET_REPUTATION_PENALTY_INVALID_CONTRIBUTION * count
+            -settings.NEBULANET_REPUTATION_PENALTY_INVALID_CONTRIBUTION * count
         )
 
     def add_signature_failure_penalty(self) -> None:
         """Apply invalid signature penalty to reputation."""
-        self._adjust_reputation(-settings.COMETNET_REPUTATION_PENALTY_INVALID_SIGNATURE)
+        self._adjust_reputation(-settings.NEBULANET_REPUTATION_PENALTY_INVALID_SIGNATURE)
 
     def blacklist(self) -> None:
         """Blacklist this peer."""
         self.is_blacklisted = True
-        logger.log("COMETNET", f"Peer {self.node_id[:8]} has been blacklisted")
+        logger.log("NEBULANET", f"Peer {self.node_id[:8]} has been blacklisted")
 
     def unblacklist(self) -> None:
         """Remove this peer from the blacklist."""
         self.is_blacklisted = False
         logger.log(
-            "COMETNET", f"Peer {self.node_id[:8]} has been removed from blacklist"
+            "NEBULANET", f"Peer {self.node_id[:8]} has been removed from blacklist"
         )
 
     def _adjust_reputation(self, delta: float) -> None:
         """Adjust reputation by delta, clamping to valid range."""
         self.reputation = max(
-            settings.COMETNET_REPUTATION_MIN,
-            min(settings.COMETNET_REPUTATION_MAX, self.reputation + delta),
+            settings.NEBULANET_REPUTATION_MIN,
+            min(settings.NEBULANET_REPUTATION_MAX, self.reputation + delta),
         )
 
 
@@ -220,7 +220,7 @@ class ReputationStore:
             peer = PeerReputation(
                 node_id=node_id,
                 reputation=peer_data.get(
-                    "reputation", settings.COMETNET_REPUTATION_INITIAL
+                    "reputation", settings.NEBULANET_REPUTATION_INITIAL
                 ),
                 first_seen=peer_data.get("first_seen", default_seen_time),
                 last_seen=peer_data.get("last_seen", default_seen_time),

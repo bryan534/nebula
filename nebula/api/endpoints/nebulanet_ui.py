@@ -3,8 +3,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from comet.api.endpoints.admin import require_admin_auth
-from comet.cometnet import CometNetBackend, get_active_backend
+from nebula.api.endpoints.admin import require_admin_auth
+from nebula.nebulanet import NebulaNetBackend, get_active_backend
 
 router = APIRouter(dependencies=[Depends(require_admin_auth)])
 
@@ -55,9 +55,9 @@ class BlacklistRequest(BaseModel):
 # --- Endpoints ---
 
 
-def get_cometnet_backend() -> CometNetBackend:
+def get_nebulanet_backend() -> NebulaNetBackend:
     """
-    Get the active CometNet backend (either local service or relay).
+    Get the active NebulaNet backend (either local service or relay).
     Raises HTTPException if neither is available.
     """
     backend = get_active_backend()
@@ -66,51 +66,51 @@ def get_cometnet_backend() -> CometNetBackend:
 
     raise HTTPException(
         status_code=503,
-        detail="CometNet is not enabled (neither local service nor relay configured)",
+        detail="NebulaNet is not enabled (neither local service nor relay configured)",
     )
 
 
 @router.get(
-    "/admin/api/cometnet/stats",
-    tags=["Admin", "CometNet"],
-    summary="Get CometNet Stats",
+    "/admin/api/nebulanet/stats",
+    tags=["Admin", "NebulaNet"],
+    summary="Get NebulaNet Stats",
 )
 async def get_stats(
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     return await backend.get_stats()
 
 
 @router.get(
-    "/admin/api/cometnet/peers",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/peers",
+    tags=["Admin", "NebulaNet"],
     summary="Get Connected Peers",
 )
 async def get_peers(
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     return await backend.get_peers()
 
 
 @router.get(
-    "/admin/api/cometnet/pools",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools",
+    tags=["Admin", "NebulaNet"],
     summary="Get Pools",
 )
 async def get_pools(
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     return await backend.get_pools()
 
 
 @router.post(
-    "/admin/api/cometnet/pools",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools",
+    tags=["Admin", "NebulaNet"],
     summary="Create Pool",
 )
 async def create_pool(
     request: CreatePoolRequest,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     try:
         return await backend.create_pool(
@@ -124,13 +124,13 @@ async def create_pool(
 
 
 @router.delete(
-    "/admin/api/cometnet/pools/{pool_id}",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}",
+    tags=["Admin", "NebulaNet"],
     summary="Delete Pool",
 )
 async def delete_pool(
     pool_id: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     if await backend.delete_pool(pool_id):
         return {"status": "success"}
@@ -138,14 +138,14 @@ async def delete_pool(
 
 
 @router.post(
-    "/admin/api/cometnet/pools/{pool_id}/join",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/join",
+    tags=["Admin", "NebulaNet"],
     summary="Join Pool",
 )
 async def join_pool(
     pool_id: str,
     request: JoinPoolRequest,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     try:
         if request.invite_code:
@@ -164,14 +164,14 @@ async def join_pool(
 
 
 @router.post(
-    "/admin/api/cometnet/pools/{pool_id}/invite",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/invite",
+    tags=["Admin", "NebulaNet"],
     summary="Create Pool Invite",
 )
 async def create_pool_invite(
     pool_id: str,
     request: CreateInviteRequest,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     invite_link = await backend.create_pool_invite(
         pool_id, request.expires_in, request.max_uses
@@ -182,26 +182,26 @@ async def create_pool_invite(
 
 
 @router.get(
-    "/admin/api/cometnet/pools/{pool_id}/invites",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/invites",
+    tags=["Admin", "NebulaNet"],
     summary="Get Pool Invites",
 )
 async def get_pool_invites(
     pool_id: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     return await backend.get_pool_invites(pool_id)
 
 
 @router.delete(
-    "/admin/api/cometnet/pools/{pool_id}/invites/{invite_code}",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/invites/{invite_code}",
+    tags=["Admin", "NebulaNet"],
     summary="Delete Pool Invite",
 )
 async def delete_pool_invite(
     pool_id: str,
     invite_code: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     success = await backend.delete_pool_invite(pool_id, invite_code)
     if not success:
@@ -210,13 +210,13 @@ async def delete_pool_invite(
 
 
 @router.delete(
-    "/admin/api/cometnet/pools/{pool_id}/subscribe",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/subscribe",
+    tags=["Admin", "NebulaNet"],
     summary="Unsubscribe from Pool",
 )
 async def unsubscribe_pool(
     pool_id: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     if await backend.unsubscribe_from_pool(pool_id):
         return {"status": "success"}
@@ -224,13 +224,13 @@ async def unsubscribe_pool(
 
 
 @router.post(
-    "/admin/api/cometnet/pools/{pool_id}/subscribe",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/subscribe",
+    tags=["Admin", "NebulaNet"],
     summary="Subscribe to Pool",
 )
 async def subscribe_pool(
     pool_id: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     if await backend.subscribe_to_pool(pool_id):
         return {"status": "success"}
@@ -238,14 +238,14 @@ async def subscribe_pool(
 
 
 @router.post(
-    "/admin/api/cometnet/pools/{pool_id}/members",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/members",
+    tags=["Admin", "NebulaNet"],
     summary="Add Pool Member",
 )
 async def add_pool_member(
     pool_id: str,
     request: AddMemberRequest,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     if await backend.add_pool_member(pool_id, request.member_key, request.role):
         return {"status": "success"}
@@ -253,14 +253,14 @@ async def add_pool_member(
 
 
 @router.delete(
-    "/admin/api/cometnet/pools/{pool_id}/members/{member_key}",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/members/{member_key}",
+    tags=["Admin", "NebulaNet"],
     summary="Remove Pool Member",
 )
 async def remove_pool_member(
     pool_id: str,
     member_key: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     if await backend.remove_pool_member(pool_id, member_key):
         return {"status": "success"}
@@ -268,13 +268,13 @@ async def remove_pool_member(
 
 
 @router.get(
-    "/admin/api/cometnet/pools/{pool_id}",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}",
+    tags=["Admin", "NebulaNet"],
     summary="Get Pool Details",
 )
 async def get_pool_details(
     pool_id: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     """Get detailed information about a pool including all members."""
     pool = await backend.get_pool_details(pool_id)
@@ -284,15 +284,15 @@ async def get_pool_details(
 
 
 @router.patch(
-    "/admin/api/cometnet/pools/{pool_id}/members/{member_key}/role",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/members/{member_key}/role",
+    tags=["Admin", "NebulaNet"],
     summary="Update Member Role",
 )
 async def update_member_role(
     pool_id: str,
     member_key: str,
     request: UpdateMemberRoleRequest,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     """Change a member's role (promote to admin or demote to member)."""
     try:
@@ -306,13 +306,13 @@ async def update_member_role(
 
 
 @router.post(
-    "/admin/api/cometnet/pools/{pool_id}/leave",
-    tags=["Admin", "CometNet"],
+    "/admin/api/nebulanet/pools/{pool_id}/leave",
+    tags=["Admin", "NebulaNet"],
     summary="Leave Pool",
 )
 async def leave_pool(
     pool_id: str,
-    backend=Depends(get_cometnet_backend),
+    backend=Depends(get_nebulanet_backend),
 ):
     """Leave a pool (self-removal). Any member except creator can leave."""
     try:

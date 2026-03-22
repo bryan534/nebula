@@ -6,16 +6,16 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <meta content="Comet" property="og:title" />
-    <meta content="Comet Dashboard" property="og:description" />
+    <meta content="Nebula" property="og:title" />
+    <meta content="Nebula Dashboard" property="og:description" />
     <meta content="#6b6ef8" data-react-helmet="true" name="theme-color" />
 
-    <title>Comet - Dashboard</title>
+    <title>Nebula - Dashboard</title>
     <link
       id="favicon"
       rel="icon"
       type="image/x-icon"
-      href="https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/icon.png"
+      href="https://raw.githubusercontent.com/g0ldyy/nebula/refs/heads/main/nebula/assets/icon.png"
     />
 
     <link
@@ -85,7 +85,7 @@
         gap: 15px;
       }
 
-      .comet-text {
+      .nebula-text {
         font-size: 1.8rem;
         font-weight: 500;
         margin: 0;
@@ -1078,12 +1078,12 @@
     <div class="container">
       <div class="header">
         <div class="header-left">
-          <h1 class="comet-text">
+          <h1 class="nebula-text">
             <img
               class="emoji"
               src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4ab/512.gif"
             />
-            Comet
+            Nebula
           </h1>
           <div class="admin-badge">Dashboard</div>
         </div>
@@ -1125,9 +1125,9 @@
             <sl-icon name="rocket-takeoff"></sl-icon>
             &nbsp;Background Scraper
           </sl-tab>
-          <sl-tab slot="nav" panel="cometnet">
+          <sl-tab slot="nav" panel="nebulanet">
             <sl-icon name="share"></sl-icon>
-            &nbsp;CometNet P2P
+            &nbsp;NebulaNet P2P
           </sl-tab>
 
           <sl-tab-panel name="connections">
@@ -1567,7 +1567,7 @@
             </div>
           </sl-tab-panel>
 
-          <sl-tab-panel name="cometnet">
+          <sl-tab-panel name="nebulanet">
             <div class="tab-content">
               <div class="stats-cards">
                 <div class="stat-card">
@@ -1826,7 +1826,7 @@
                 <sl-input
                   label="Paste Invite Link"
                   id="join-pool-link"
-                  placeholder="cometnet://join?pool=...&code=...&node=..."
+                  placeholder="nebulanet://join?pool=...&code=...&node=..."
                   help-text="Paste the full invite link you received"
                 ></sl-input>
               </sl-tab-panel>
@@ -1997,7 +1997,7 @@
                       </span>
                       {% if version_info.commit_hash %}
                       <a
-                        href="https://github.com/g0ldyy/comet/commit/{{ version_info.commit_hash }}"
+                        href="https://github.com/g0ldyy/nebula/commit/{{ version_info.commit_hash }}"
                         target="_blank"
                         style="
                           background: linear-gradient(135deg, #8b5cf6, #7c3aed);
@@ -2124,7 +2124,7 @@
       let currentMetricsData = null;
       let connectionsInterval = null;
       let logsInterval = null;
-      let cometnetInterval = null;
+      let nebulanetInterval = null;
       let backgroundScraperInterval = null;
       let backgroundScraperNextCycleTicker = null;
       let backgroundScraperNextCycleState = "stopped";
@@ -2249,9 +2249,9 @@
           clearInterval(logsInterval);
           logsInterval = null;
         }
-        if (cometnetInterval) {
-          clearInterval(cometnetInterval);
-          cometnetInterval = null;
+        if (nebulanetInterval) {
+          clearInterval(nebulanetInterval);
+          nebulanetInterval = null;
         }
         if (backgroundScraperInterval) {
           clearInterval(backgroundScraperInterval);
@@ -2281,8 +2281,8 @@
               Math.max(5000, interval),
             );
             break;
-          case "cometnet":
-            cometnetInterval = setInterval(loadCometNetStats, 10000);
+          case "nebulanet":
+            nebulanetInterval = setInterval(loadNebulaNetStats, 10000);
             break;
         }
       }
@@ -2342,8 +2342,8 @@
           case "background-scraper":
             loadBackgroundScraperData();
             break;
-          case "cometnet":
-            loadCometNetStats();
+          case "nebulanet":
+            loadNebulaNetStats();
             break;
           case "system":
             checkUpdateStatus();
@@ -2601,7 +2601,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `comet-logs-${new Date()
+        a.download = `nebula-logs-${new Date()
           .toISOString()
           .slice(0, 19)
           .replace(/:/g, "-")}.txt`;
@@ -2635,16 +2635,16 @@
 
       let myPublicKey = null;
 
-      async function loadCometNetStats() {
+      async function loadNebulaNetStats() {
         try {
           const [statsRes, poolsRes, peersRes] = await Promise.all([
-            fetch("/admin/api/cometnet/stats"),
-            fetch("/admin/api/cometnet/pools"),
-            fetch("/admin/api/cometnet/peers"),
+            fetch("/admin/api/nebulanet/stats"),
+            fetch("/admin/api/nebulanet/pools"),
+            fetch("/admin/api/nebulanet/peers"),
           ]);
 
           if (!statsRes.ok) {
-            showCometNetDisabled();
+            showNebulaNetDisabled();
             return;
           }
 
@@ -2684,21 +2684,21 @@
             poolsCache = [];
           }
 
-          updateCometNetOverview(stats);
+          updateNebulaNetOverview(stats);
           updatePoolsUI();
-          updateCometNetPeers(peersData.peers);
+          updateNebulaNetPeers(peersData.peers);
         } catch (e) {
-          console.error("CometNet load error", e);
-          showCometNetDisabled();
+          console.error("NebulaNet load error", e);
+          showNebulaNetDisabled();
         }
       }
 
-      function showCometNetDisabled() {
+      function showNebulaNetDisabled() {
         document.getElementById("pools-list").innerHTML =
-          '<div class="empty-state"><sl-icon name="wifi-off"></sl-icon><p>CometNet is not enabled</p></div>';
+          '<div class="empty-state"><sl-icon name="wifi-off"></sl-icon><p>NebulaNet is not enabled</p></div>';
       }
 
-      function updateCometNetOverview(stats) {
+      function updateNebulaNetOverview(stats) {
         document.getElementById("cnet-node-id").textContent = stats.node_id
           ? stats.node_id.substring(0, 8)
           : "-";
@@ -2749,7 +2749,7 @@
         }
       }
 
-      function updateCometNetPeers(peers) {
+      function updateNebulaNetPeers(peers) {
         const container = document.getElementById("cnet-peers-list");
         if (!peers || peers.length === 0) {
           container.innerHTML =
@@ -2991,7 +2991,7 @@
         }
 
         try {
-          const res = await fetch("/admin/api/cometnet/pools", {
+          const res = await fetch("/admin/api/nebulanet/pools", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -3003,7 +3003,7 @@
           });
           if (res.ok) {
             createPoolDialog.hide();
-            loadCometNetStats();
+            loadNebulaNetStats();
             showToast("Pool created successfully!", "success");
           } else {
             showToast("Failed to create pool: " + (await res.text()), "danger");
@@ -3016,12 +3016,12 @@
 
       function parseInviteLink(link) {
         /**
-         * Parse a cometnet invite link.
-         * Format: cometnet://join?pool=X&code=Y&node=Z
+         * Parse a nebulanet invite link.
+         * Format: nebulanet://join?pool=X&code=Y&node=Z
          */
         if (!link) return null;
 
-        if (link.startsWith("cometnet://join?")) {
+        if (link.startsWith("nebulanet://join?")) {
           const params = new URLSearchParams(link.split("?")[1]);
           return {
             pool: params.get("pool"),
@@ -3045,7 +3045,7 @@
 
           if (!parsed || !parsed.pool || !parsed.code) {
             showToast(
-              "Invalid invite link. Please paste a valid cometnet:// link.",
+              "Invalid invite link. Please paste a valid nebulanet:// link.",
               "danger",
             );
             return;
@@ -3081,7 +3081,7 @@
 
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}/join`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}/join`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -3090,7 +3090,7 @@
           );
           if (res.ok) {
             joinPoolDialog.hide();
-            loadCometNetStats();
+            loadNebulaNetStats();
             showToast("Joined pool successfully!", "success");
           } else {
             const errText = await res.text();
@@ -3110,19 +3110,19 @@
           ))
         )
           return;
-        await fetch(`/admin/api/cometnet/pools/${id}/subscribe`, {
+        await fetch(`/admin/api/nebulanet/pools/${id}/subscribe`, {
           method: "POST",
         });
-        loadCometNetStats();
+        loadNebulaNetStats();
       }
 
       async function unsubscribePool(id) {
         if (!(await showConfirm("Unsubscribe from this pool?", "Unsubscribe")))
           return;
-        await fetch(`/admin/api/cometnet/pools/${id}/subscribe`, {
+        await fetch(`/admin/api/nebulanet/pools/${id}/subscribe`, {
           method: "DELETE",
         });
-        loadCometNetStats();
+        loadNebulaNetStats();
       }
 
       async function deletePool(id) {
@@ -3134,12 +3134,12 @@
         )
           return;
         try {
-          const res = await fetch(`/admin/api/cometnet/pools/${id}`, {
+          const res = await fetch(`/admin/api/nebulanet/pools/${id}`, {
             method: "DELETE",
           });
           if (res.ok) {
             showToast("Pool deleted", "success");
-            loadCometNetStats();
+            loadNebulaNetStats();
           } else {
             showToast("Failed to delete pool", "danger");
           }
@@ -3157,12 +3157,12 @@
         )
           return;
         try {
-          const res = await fetch(`/admin/api/cometnet/pools/${id}/leave`, {
+          const res = await fetch(`/admin/api/nebulanet/pools/${id}/leave`, {
             method: "POST",
           });
           if (res.ok) {
             showToast("Successfully left the pool", "success");
-            loadCometNetStats();
+            loadNebulaNetStats();
           } else {
             const data = await res.json().catch(() => ({}));
             showToast(data.detail || "Failed to leave pool", "danger");
@@ -3328,7 +3328,7 @@
         if (usesInput) body.max_uses = parseInt(usesInput);
 
         try {
-          const res = await fetch(`/admin/api/cometnet/pools/${id}/invite`, {
+          const res = await fetch(`/admin/api/nebulanet/pools/${id}/invite`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
@@ -3374,7 +3374,7 @@
 
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}`,
           );
           if (!res.ok) {
             throw new Error("Failed to load pool details");
@@ -3418,7 +3418,7 @@
 
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}/invites`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}/invites`,
           );
           if (!res.ok) throw new Error("Failed to load invites");
           const invites = await res.json();
@@ -3437,7 +3437,7 @@
               const uses = invite.max_uses
                 ? `${invite.uses || 0}/${invite.max_uses}`
                 : "Unlimited";
-              const link = `${window.location.origin}/admin/cometnet/join?code=${invite.invite_code}`;
+              const link = `${window.location.origin}/admin/nebulanet/join?code=${invite.invite_code}`;
 
               return `
                 <div class="tracker-item" style="display: flex; justify-content: space-between; align-items: center;">
@@ -3472,7 +3472,7 @@
           return;
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}/invites/${encodeURIComponent(code)}`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}/invites/${encodeURIComponent(code)}`,
             { method: "DELETE" },
           );
           if (res.ok) {
@@ -3590,7 +3590,7 @@
 
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}/members/${encodeURIComponent(memberKey)}/role`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}/members/${encodeURIComponent(memberKey)}/role`,
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
@@ -3600,7 +3600,7 @@
 
           if (res.ok) {
             await openPoolMembersDialog(poolId); // Refresh
-            loadCometNetStats(); // Refresh main list too
+            loadNebulaNetStats(); // Refresh main list too
           } else {
             const data = await res.json();
             showToast(
@@ -3625,7 +3625,7 @@
 
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}/members/${encodeURIComponent(memberKey)}/role`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}/members/${encodeURIComponent(memberKey)}/role`,
             {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
@@ -3635,7 +3635,7 @@
 
           if (res.ok) {
             await openPoolMembersDialog(poolId); // Refresh
-            loadCometNetStats(); // Refresh main list too
+            loadNebulaNetStats(); // Refresh main list too
           } else {
             const data = await res.json();
             showToast(
@@ -3660,7 +3660,7 @@
 
         try {
           const res = await fetch(
-            `/admin/api/cometnet/pools/${encodeURIComponent(poolId)}/members/${encodeURIComponent(memberKey)}`,
+            `/admin/api/nebulanet/pools/${encodeURIComponent(poolId)}/members/${encodeURIComponent(memberKey)}`,
             {
               method: "DELETE",
             },
@@ -3668,7 +3668,7 @@
 
           if (res.ok) {
             await openPoolMembersDialog(poolId); // Refresh
-            loadCometNetStats(); // Refresh main list too
+            loadNebulaNetStats(); // Refresh main list too
           } else {
             const data = await res.json();
             showToast(

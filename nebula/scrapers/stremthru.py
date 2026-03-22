@@ -1,9 +1,9 @@
 import xml.etree.ElementTree as ET
 
-from comet.core.logger import log_scraper_error, logger
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
-from comet.services.anime import anime_mapper
+from nebula.core.logger import log_scraper_error, logger
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
+from nebula.services.anime import anime_mapper
 
 
 class StremthruScraper(BaseScraper):

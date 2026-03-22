@@ -4,12 +4,12 @@ import time
 import aiohttp
 import orjson
 
-from comet.core.database import (build_upsert_assignments, database,
+from nebula.core.database import (build_upsert_assignments, database,
                                  encode_json_param)
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.services.anime import anime_mapper
-from comet.utils.parsing import parse_media_id
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.services.anime import anime_mapper
+from nebula.utils.parsing import parse_media_id
 
 from .imdb import get_imdb_metadata
 from .kitsu import get_kitsu_metadata

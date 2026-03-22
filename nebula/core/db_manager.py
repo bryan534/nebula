@@ -11,9 +11,9 @@ import aiofiles
 import orjson
 from databases import Database
 
-from comet.core.database import IS_SQLITE
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.database import IS_SQLITE
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 @dataclass

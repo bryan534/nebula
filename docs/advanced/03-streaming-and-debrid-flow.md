@@ -4,7 +4,7 @@
 
 1. Client requests manifest (`/manifest.json` or `/{b64config}/manifest.json`).
 2. Client requests streams (`/stream/{media_type}/{media_id}.json` or configured route).
-3. Comet fetches metadata, reads cache, may scrape, may check debrid availability.
+3. Nebula fetches metadata, reads cache, may scrape, may check debrid availability.
 4. Stream list is returned with playback URLs.
 5. Playback endpoint resolves/generates download link and either:
 - redirects (`302`) to debrid link, or
@@ -44,9 +44,9 @@
 
 ## Status Video Responses
 
-When provider errors occur, Comet may return mp4 status assets from `comet/assets/status_videos` instead of JSON errors.
+When provider errors occur, Nebula may return mp4 status assets from `nebula/assets/status_videos` instead of JSON errors.
 
-Status key normalization is implemented in `comet/utils/status_keys.py`.
+Status key normalization is implemented in `nebula/utils/status_keys.py`.
 
 ## HTTP Caching
 

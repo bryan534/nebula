@@ -1,12 +1,12 @@
 import asyncio
 import re
 
-from comet.core.logger import log_scraper_error, logger
-from comet.core.models import settings
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
-from comet.services.torrent_manager import extract_trackers_from_magnet
-from comet.utils.formatting import size_to_bytes
+from nebula.core.logger import log_scraper_error, logger
+from nebula.core.models import settings
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
+from nebula.services.torrent_manager import extract_trackers_from_magnet
+from nebula.utils.formatting import size_to_bytes
 
 PAGE_PATTERN = re.compile(r'(\d+)(?=">\d+<\/a><\/li><li class="next">)')
 MAGNET_PATTERN = re.compile(r'href="(magnet:[^"]+)"')

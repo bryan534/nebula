@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.comet" version="1.0.0" name="Comet Repository" provider-name="Goldy">
-    <extension point="xbmc.addon.repository" name="Comet Repository">
+<addon id="repository.nebula" version="1.0.0" name="Nebula Repository" provider-name="Goldy">
+    <extension point="xbmc.addon.repository" name="Nebula Repository">
         <dir>
-            <info compressed="false">https://g0ldyy.github.io/comet/addons.xml</info>
-            <checksum>https://g0ldyy.github.io/comet/addons.xml.md5</checksum>
-            <datadir zip="true">https://g0ldyy.github.io/comet/</datadir>
+            <info compressed="false">https://g0ldyy.github.io/nebula/addons.xml</info>
+            <checksum>https://g0ldyy.github.io/nebula/addons.xml.md5</checksum>
+            <datadir zip="true">https://g0ldyy.github.io/nebula/</datadir>
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>Comet Repository</summary>
-        <description>Repository for the Comet Kodi add-on</description>
+        <summary>Nebula Repository</summary>
+        <description>Repository for the Nebula Kodi add-on</description>
         <platform>all</platform>
         <assets>
             <icon>icon.png</icon>

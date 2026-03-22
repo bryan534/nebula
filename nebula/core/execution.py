@@ -3,7 +3,7 @@ import multiprocessing
 import signal
 from concurrent.futures import ProcessPoolExecutor
 
-from comet.core.models import settings
+from nebula.core.models import settings
 
 _mp_context = None
 try:

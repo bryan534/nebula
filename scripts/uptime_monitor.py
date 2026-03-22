@@ -16,8 +16,8 @@ CHECK_INTERVAL = 300
 TIMEOUT = 30
 
 WEBHOOK_URL = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
-WEBHOOK_USERNAME = "Comet Monitor"
-WEBHOOK_AVATAR = "https://raw.githubusercontent.com/g0ldyy/comet/refs/heads/main/comet/assets/icon.png"
+WEBHOOK_USERNAME = "Nebula Monitor"
+WEBHOOK_AVATAR = "https://raw.githubusercontent.com/g0ldyy/nebula/refs/heads/main/nebula/assets/icon.png"
 
 # ===========================================
 
@@ -204,7 +204,7 @@ async def monitor_instance(session: aiohttp.ClientSession, url: str) -> None:
 
 def print_header() -> None:
     print()
-    print(f"  {C_BOLD}☄️  Comet Uptime Monitor{C_RESET}")
+    print(f"  {C_BOLD}☄️  Nebula Uptime Monitor{C_RESET}")
     print(f"  {C_DIM}{'─' * 50}{C_RESET}")
     print(
         f"  {C_GRAY}Instances: {C_RESET}{len(INSTANCES)}  {C_GRAY}│  Interval: {C_RESET}{CHECK_INTERVAL}s"

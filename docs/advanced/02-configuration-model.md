@@ -2,11 +2,11 @@
 
 ## Source of Truth
 
-For runtime behavior, use `AppSettings` in `comet/core/models.py` as authoritative.
+For runtime behavior, use `AppSettings` in `nebula/core/models.py` as authoritative.
 
 Practical rule:
 
-- `comet/core/models.py`: real defaults and parsing behavior.
+- `nebula/core/models.py`: real defaults and parsing behavior.
 - `.env-sample`: human template and comments.
 
 ## Important Parsing Behavior
@@ -64,8 +64,8 @@ Behavior:
 - `DMM_INGEST_*`
 - `DEBRID_ACCOUNT_SCRAPE_*`
 
-7. CometNet
-- `COMETNET_*` (documented separately in `docs/cometnet/`)
+7. NebulaNet
+- `NEBULANET_*` (documented separately in `docs/nebulanet/`)
 
 ## Backward-Compatibility Settings
 
@@ -75,7 +75,7 @@ Behavior:
 
 - Keep a small `.env` containing only overrides.
 - Use `.env-sample` as a catalog of available keys.
-- Validate high-risk settings (workers, DB type, proxy, CometNet mode) before production rollout.
+- Validate high-risk settings (workers, DB type, proxy, NebulaNet mode) before production rollout.
 
 ## Next
 

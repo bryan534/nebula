@@ -1,7 +1,7 @@
 """
-CometNet Protocol Module
+NebulaNet Protocol Module
 
-Defines all message types and serialization logic for CometNet P2P communication.
+Defines all message types and serialization logic for NebulaNet P2P communication.
 Uses MsgPack for efficient binary serialization.
 """
 
@@ -12,15 +12,15 @@ from typing import List, Optional, Union
 import msgpack
 from pydantic import BaseModel, Field, field_validator
 
-from comet.cometnet.utils import canonicalize_data
-from comet.utils.formatting import normalize_info_hash
+from nebula.nebulanet.utils import canonicalize_data
+from nebula.utils.formatting import normalize_info_hash
 
 # Protocol version for backwards compatibility
 PROTOCOL_VERSION = "1.0"
 
 
 class MessageType(str, Enum):
-    """Types of messages in the CometNet protocol."""
+    """Types of messages in the NebulaNet protocol."""
 
     # Core messages
     HANDSHAKE = "handshake"
@@ -42,7 +42,7 @@ class MessageType(str, Enum):
 
 
 class BaseMessage(BaseModel):
-    """Base class for all CometNet messages."""
+    """Base class for all NebulaNet messages."""
 
     version: str = Field(default=PROTOCOL_VERSION)
     type: MessageType
@@ -127,7 +127,7 @@ class TorrentMetadata(BaseModel):
     """
     Metadata for a torrent shared across the network.
 
-    This is the core data structure that CometNet propagates.
+    This is the core data structure that NebulaNet propagates.
     """
 
     info_hash: str  # 40-character hex string

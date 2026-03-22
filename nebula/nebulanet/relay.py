@@ -1,9 +1,9 @@
 """
-CometNet Relay Client
+NebulaNet Relay Client
 
-HTTP client for relaying torrent broadcasts to an external CometNet service.
-Used in cluster deployments where Comet workers send torrents to a
-dedicated CometNet standalone service.
+HTTP client for relaying torrent broadcasts to an external NebulaNet service.
+Used in cluster deployments where Nebula workers send torrents to a
+dedicated NebulaNet standalone service.
 """
 
 import asyncio
@@ -12,16 +12,16 @@ from typing import Any, Dict, List, Optional, Set
 
 import aiohttp
 
-from comet.cometnet.interface import CometNetBackend
-from comet.core.logger import logger
+from nebula.nebulanet.interface import NebulaNetBackend
+from nebula.core.logger import logger
 
 
-class CometNetRelay(CometNetBackend):
+class NebulaNetRelay(NebulaNetBackend):
     """
-    HTTP client for relaying torrents to a standalone CometNet service.
+    HTTP client for relaying torrents to a standalone NebulaNet service.
 
-    This is used when COMETNET_RELAY_URL is configured, allowing Comet workers
-    to send torrent broadcasts to an external CometNet service instead of
+    This is used when NEBULANET_RELAY_URL is configured, allowing Nebula workers
+    to send torrent broadcasts to an external NebulaNet service instead of
     running their own P2P network.
     """
 
@@ -32,7 +32,7 @@ class CometNetRelay(CometNetBackend):
         Initialize the relay client.
 
         Args:
-            relay_url: Base URL of the CometNet standalone service (e.g., http://cometnet:8766)
+            relay_url: Base URL of the NebulaNet standalone service (e.g., http://nebulanet:8766)
             timeout: Request timeout in seconds
             api_key: Optional API key for authentication
         """
@@ -77,7 +77,7 @@ class CometNetRelay(CometNetBackend):
 
         self._batch_task = asyncio.create_task(self._batch_flush_loop())
 
-        logger.log("COMETNET", f"Relay client started - Target: {self.relay_url}")
+        logger.log("NEBULANET", f"Relay client started - Target: {self.relay_url}")
 
     async def stop(self):
         """Stop the relay client and flush remaining batch."""
@@ -105,7 +105,7 @@ class CometNetRelay(CometNetBackend):
             self._session = None
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Relay client stopped - Relayed: {self._total_relayed}, Errors: {self._total_errors}",
         )
 
@@ -124,7 +124,7 @@ class CometNetRelay(CometNetBackend):
         parsed: Optional[dict] = None,
     ) -> bool:
         """
-        Queue a torrent for relay to the standalone CometNet service.
+        Queue a torrent for relay to the standalone NebulaNet service.
 
         Returns True if queued successfully.
         """
@@ -167,7 +167,7 @@ class CometNetRelay(CometNetBackend):
                 logger.debug(f"Relay batch flush error: {e}")
 
     async def _flush_batch(self):
-        """Flush the current batch to the CometNet service."""
+        """Flush the current batch to the NebulaNet service."""
         async with self._batch_lock:
             if not self._batch:
                 return
@@ -204,7 +204,7 @@ class CometNetRelay(CometNetBackend):
                 if response.status == 200:
                     self._total_relayed += 1
                     logger.log(
-                        "COMETNET",
+                        "NEBULANET",
                         f"Relayed torrent {torrent['info_hash']} to {self.relay_url}",
                     )
                     return True
@@ -233,7 +233,7 @@ class CometNetRelay(CometNetBackend):
                     self._total_relayed += queued
                     self._total_errors += errors
                     logger.log(
-                        "COMETNET",
+                        "NEBULANET",
                         f"Relayed batch of {queued} torrents to {self.relay_url}",
                     )
                     return queued
@@ -278,7 +278,7 @@ class CometNetRelay(CometNetBackend):
         return remote_stats
 
     async def fetch_remote_stats(self) -> Optional[Dict]:
-        """Fetch stats from the remote CometNet standalone service."""
+        """Fetch stats from the remote NebulaNet standalone service."""
         if not self._session or not self._running:
             return None
 
@@ -300,7 +300,7 @@ class CometNetRelay(CometNetBackend):
             return None
 
     async def fetch_remote_pools(self) -> Optional[Dict]:
-        """Fetch pools from the remote CometNet standalone service."""
+        """Fetch pools from the remote NebulaNet standalone service."""
         if not self._session or not self._running:
             return None
 
@@ -315,7 +315,7 @@ class CometNetRelay(CometNetBackend):
             return {"pools": {}, "memberships": [], "subscriptions": []}
 
     async def get_peers(self) -> Dict[str, Any]:
-        """Get peers from the remote CometNet standalone service."""
+        """Get peers from the remote NebulaNet standalone service."""
         if not self._session or not self._running:
             return {"peers": [], "count": 0}
 
@@ -574,22 +574,22 @@ class CometNetRelay(CometNetBackend):
         await self.broadcast_torrents([metadata])
 
 
-_relay_instance: Optional[CometNetRelay] = None
+_relay_instance: Optional[NebulaNetRelay] = None
 
 
-def get_relay() -> Optional[CometNetRelay]:
+def get_relay() -> Optional[NebulaNetRelay]:
     """Get the global relay instance."""
     return _relay_instance
 
 
-async def init_relay(relay_url: str, api_key: Optional[str] = None) -> CometNetRelay:
+async def init_relay(relay_url: str, api_key: Optional[str] = None) -> NebulaNetRelay:
     """Initialize the global relay instance."""
     global _relay_instance
 
     if _relay_instance is not None:
         await _relay_instance.stop()
 
-    _relay_instance = CometNetRelay(relay_url, api_key=api_key)
+    _relay_instance = NebulaNetRelay(relay_url, api_key=api_key)
     await _relay_instance.start()
 
     return _relay_instance

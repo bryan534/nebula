@@ -3,13 +3,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from comet.core.database import (build_json_list_membership_predicate,
+from nebula.core.database import (build_json_list_membership_predicate,
                                  database, encode_json_param, fetch_flag)
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.services.lock import DistributedLock
-from comet.utils.media_ids import normalize_cache_media_ids
-from comet.utils.torrent_cache import normalize_search_params
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.services.lock import DistributedLock
+from nebula.utils.media_ids import normalize_cache_media_ids
+from nebula.utils.torrent_cache import normalize_search_params
 
 CACHE_MEDIA_ID_MEMBERSHIP_SQL = build_json_list_membership_predicate(
     "media_id", "cache_media_ids"

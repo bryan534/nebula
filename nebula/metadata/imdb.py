@@ -1,7 +1,7 @@
 import aiohttp
 
-from comet.core.logger import logger
-from comet.utils.year import parse_year, parse_year_range
+from nebula.core.logger import logger
+from nebula.utils.year import parse_year, parse_year_range
 
 _IMDB_SUGGESTION_URL = "https://v3.sg.media-imdb.com/suggestion/a/{id}.json"
 _CINEMETA_META_URL = "https://v3-cinemeta.strem.io/meta/{media_type}/{id}.json"

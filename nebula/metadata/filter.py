@@ -1,10 +1,10 @@
 import time
 from datetime import datetime
 
-from comet.core.logger import logger
-from comet.core.models import database, settings
-from comet.metadata.episode_index import EpisodeIndexService
-from comet.metadata.tmdb import TMDBApi
+from nebula.core.logger import logger
+from nebula.core.models import database, settings
+from nebula.metadata.episode_index import EpisodeIndexService
+from nebula.metadata.tmdb import TMDBApi
 
 
 class DigitalReleaseFilter:

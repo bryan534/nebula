@@ -13,11 +13,11 @@ except ImportError:
 
 import orjson
 
-import comet.core.models as _models_mod
-from comet.core.logger import logger
-from comet.core.models import (IS_POSTGRES, IS_SQLITE, JSON_FUNC, database,
+import nebula.core.models as _models_mod
+from nebula.core.logger import logger
+from nebula.core.models import (IS_POSTGRES, IS_SQLITE, JSON_FUNC, database,
                                settings)
-from comet.core.schema_migrations import (NULL_SCOPE_SENTINEL,
+from nebula.core.schema_migrations import (NULL_SCOPE_SENTINEL,
                                           run_schema_migrations)
 
 __all__ = [
@@ -513,7 +513,7 @@ async def setup_database():
                 os.makedirs(db_dir, exist_ok=True)
             if not os.path.exists(settings.DATABASE_PATH):
                 Path(settings.DATABASE_PATH).touch(exist_ok=True)
-            _models_mod.set_comet_foreign_keys_enabled(False)
+            _models_mod.set_nebula_foreign_keys_enabled(False)
 
         await database.connect()
 
@@ -531,7 +531,7 @@ async def setup_database():
             )
 
             if IS_SQLITE:
-                _models_mod.set_comet_foreign_keys_enabled(True)
+                _models_mod.set_nebula_foreign_keys_enabled(True)
                 await _apply_sqlite_pragmas(
                     foreign_keys=True,
                     journal_mode=_SQLITE_DEFAULT_JOURNAL_MODE,

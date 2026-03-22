@@ -1,5 +1,5 @@
 """
-CometNet Gossip Module
+NebulaNet Gossip Module
 
 Implements the epidemic gossip protocol for propagating torrent metadata
 across the network.
@@ -10,14 +10,14 @@ import time
 from collections import deque
 from typing import Awaitable, Callable, Deque, Dict, List, Optional, Set
 
-from comet.cometnet.crypto import NodeIdentity
-from comet.cometnet.protocol import TorrentAnnounce, TorrentMetadata
-from comet.cometnet.reputation import ReputationStore
-from comet.cometnet.utils import run_in_executor
-from comet.cometnet.validation import (validate_message_security,
+from nebula.nebulanet.crypto import NodeIdentity
+from nebula.nebulanet.protocol import TorrentAnnounce, TorrentMetadata
+from nebula.nebulanet.reputation import ReputationStore
+from nebula.nebulanet.utils import run_in_executor
+from nebula.nebulanet.validation import (validate_message_security,
                                        verify_torrent_signature_sync)
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 # Type for the callback to save a torrent to the database
 SaveTorrentCallback = Callable[[TorrentMetadata], Awaitable[None]]
@@ -82,15 +82,15 @@ class GossipEngine:
         self._pool_store = pool_store
 
         # Gossip parameters from settings
-        self.fanout = settings.COMETNET_GOSSIP_FANOUT
-        self.gossip_interval = settings.COMETNET_GOSSIP_INTERVAL
-        self.message_ttl = settings.COMETNET_GOSSIP_MESSAGE_TTL
+        self.fanout = settings.NEBULANET_GOSSIP_FANOUT
+        self.gossip_interval = settings.NEBULANET_GOSSIP_INTERVAL
+        self.message_ttl = settings.NEBULANET_GOSSIP_MESSAGE_TTL
         self.max_torrents_per_message = (
-            settings.COMETNET_GOSSIP_MAX_TORRENTS_PER_MESSAGE
+            settings.NEBULANET_GOSSIP_MAX_TORRENTS_PER_MESSAGE
         )
 
         # Contribution mode determines what we share/receive
-        self.contribution_mode = settings.COMETNET_CONTRIBUTION_MODE
+        self.contribution_mode = settings.NEBULANET_CONTRIBUTION_MODE
         if self.contribution_mode not in self.CONTRIBUTION_MODES:
             logger.warning(
                 f"Invalid contribution mode '{self.contribution_mode}', defaulting to 'full'"
@@ -157,7 +157,7 @@ class GossipEngine:
         self._gossip_task = asyncio.create_task(self._gossip_loop())
         self._cleanup_task = asyncio.create_task(self._cleanup_loop())
 
-        logger.log("COMETNET", "Gossip engine started")
+        logger.log("NEBULANET", "Gossip engine started")
 
     async def stop(self) -> None:
         """Stop the gossip engine."""
@@ -171,7 +171,7 @@ class GossipEngine:
                 except asyncio.CancelledError:
                     pass
 
-        logger.log("COMETNET", "Gossip engine stopped")
+        logger.log("NEBULANET", "Gossip engine stopped")
 
     async def queue_torrents(
         self, metadata_list: List[TorrentMetadata], pool_id: Optional[str] = None
@@ -387,7 +387,7 @@ class GossipEngine:
 
             if saved_count > 0:
                 logger.log(
-                    "COMETNET",
+                    "NEBULANET",
                     f"Received {saved_count} torrents from peer {sender_id[:8]}",
                 )
 
@@ -449,11 +449,11 @@ class GossipEngine:
             now = time.time()
             if (
                 torrent.updated_at
-                > now + settings.COMETNET_GOSSIP_VALIDATION_FUTURE_TOLERANCE
+                > now + settings.NEBULANET_GOSSIP_VALIDATION_FUTURE_TOLERANCE
             ):  # Future tolerance
                 return False
             if (
-                torrent.updated_at < now - settings.COMETNET_GOSSIP_TORRENT_MAX_AGE
+                torrent.updated_at < now - settings.NEBULANET_GOSSIP_TORRENT_MAX_AGE
             ):  # Max age
                 return False
 

@@ -1,13 +1,13 @@
 import asyncio
 from typing import List, Set
 
-from comet.core.constants import INDEXER_TIMEOUT
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest, ScrapeResult
-from comet.services.indexer_manager import indexer_manager
-from comet.services.torrent_manager import (add_torrent_queue,
+from nebula.core.constants import INDEXER_TIMEOUT
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest, ScrapeResult
+from nebula.services.indexer_manager import indexer_manager
+from nebula.services.torrent_manager import (add_torrent_queue,
                                             download_torrent,
                                             extract_torrent_metadata,
                                             extract_trackers_from_magnet)

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from comet.scrapers.models import ScrapeRequest
-from comet.utils.network_manager import AsyncClientWrapper
+from nebula.scrapers.models import ScrapeRequest
+from nebula.utils.network_manager import AsyncClientWrapper
 
 
 class BaseScraper(ABC):

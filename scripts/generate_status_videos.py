@@ -1,7 +1,7 @@
 # uv run python scripts/generate_status_videos.py \
 #     --background surfer.mp4 \
 #     --stremthru-root stremthru \
-#     --output-dir comet/assets/status_videos \
+#     --output-dir nebula/assets/status_videos \
 #     --scope essential \
 #     --overwrite \
 #     --clean-output \
@@ -30,13 +30,13 @@ from pathlib import Path
 from textwrap import fill
 
 try:
-    from comet.utils.status_keys import \
+    from nebula.utils.status_keys import \
         normalize_status_key as normalize_status_key_runtime
 except ModuleNotFoundError:
     repo_root = Path(__file__).resolve().parents[1]
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
-    from comet.utils.status_keys import \
+    from nebula.utils.status_keys import \
         normalize_status_key as normalize_status_key_runtime
 
 STATUS_DECLARATION_PATTERN = re.compile(
@@ -377,7 +377,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
-        default="comet/assets/status_videos",
+        default="nebula/assets/status_videos",
         help="Directory where status video assets are written.",
     )
     parser.add_argument("--width", type=int, default=1280, help="Output width.")

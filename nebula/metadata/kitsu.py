@@ -1,6 +1,6 @@
 import aiohttp
 
-from comet.core.logger import logger
+from nebula.core.logger import logger
 
 
 async def get_kitsu_metadata(session: aiohttp.ClientSession, id: str):

@@ -3,7 +3,7 @@ from typing import Optional
 
 import aiohttp
 
-from comet.core.models import settings
+from nebula.core.models import settings
 
 
 class HttpClientManager:

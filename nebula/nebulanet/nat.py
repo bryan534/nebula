@@ -1,5 +1,5 @@
 """
-CometNet NAT Traversal Module
+NebulaNet NAT Traversal Module
 
 Handles UPnP port mapping using miniupnpc.
 """
@@ -10,7 +10,7 @@ from typing import Optional
 
 import miniupnpc
 
-from comet.core.logger import logger
+from nebula.core.logger import logger
 
 
 class UPnPManager:
@@ -64,7 +64,7 @@ class UPnPManager:
             upnp = miniupnpc.UPnP()
             upnp.discoverdelay = 200
 
-            logger.log("COMETNET", "Discovering UPnP devices...")
+            logger.log("NEBULANET", "Discovering UPnP devices...")
             ndevices = upnp.discover()
             if ndevices == 0:
                 logger.warning("No UPnP devices discovered.")
@@ -75,17 +75,17 @@ class UPnPManager:
             ext_ip = upnp.externalipaddress()
 
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"UPnP Device Found. LAN IP: {lan_addr}, External IP: {ext_ip}",
             )
 
             # Add port mapping
             try:
                 upnp.addportmapping(
-                    self.port, "TCP", lan_addr, self.port, "CometNet P2P", ""
+                    self.port, "TCP", lan_addr, self.port, "NebulaNet P2P", ""
                 )
                 logger.log(
-                    "COMETNET",
+                    "NEBULANET",
                     f"UPnP Port Mapping Successful: {ext_ip}:{self.port} -> {lan_addr}:{self.port}",
                 )
                 return ext_ip
@@ -104,7 +104,7 @@ class UPnPManager:
             upnp.discover()
             upnp.selectigd()
             upnp.deleteportmapping(self.port, "TCP")
-            logger.log("COMETNET", f"UPnP port mapping removed for port {self.port}")
+            logger.log("NEBULANET", f"UPnP port mapping removed for port {self.port}")
         except Exception:
             pass
 

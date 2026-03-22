@@ -1,7 +1,7 @@
 import aiohttp
 
-from comet.core.constants import CATALOG_TIMEOUT
-from comet.core.logger import logger
+from nebula.core.constants import CATALOG_TIMEOUT
+from nebula.core.logger import logger
 
 
 class CinemataClient:

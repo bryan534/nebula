@@ -1,5 +1,5 @@
 """
-CometNet Discovery Module
+NebulaNet Discovery Module
 
 Handles peer discovery through multiple methods:
 - Manual peer configuration
@@ -13,10 +13,10 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
-from comet.cometnet.protocol import PeerInfo, PeerRequest, PeerResponse
-from comet.cometnet.utils import is_valid_peer_address
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.nebulanet.protocol import PeerInfo, PeerRequest, PeerResponse
+from nebula.nebulanet.utils import is_valid_peer_address
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 @dataclass
@@ -36,7 +36,7 @@ class KnownPeer:
         # Don't retry too quickly after failures
         if self.connect_failures > 0:
             backoff = min(
-                settings.COMETNET_PEER_CONNECT_BACKOFF_MAX,
+                settings.NEBULANET_PEER_CONNECT_BACKOFF_MAX,
                 30 * (2 ** (self.connect_failures - 1)),
             )
             if time.time() - self.last_connect_attempt < backoff:
@@ -55,7 +55,7 @@ class KnownPeer:
 
 class DiscoveryService:
     """
-    Manages peer discovery for CometNet.
+    Manages peer discovery for NebulaNet.
 
     Uses multiple methods to find peers:
     1. Manual peers (from configuration)
@@ -72,8 +72,8 @@ class DiscoveryService:
     ):
         self.manual_peers = manual_peers or []
         self.bootstrap_nodes = bootstrap_nodes or []
-        self.min_peers = min_peers or settings.COMETNET_MIN_PEERS
-        self.max_peers = max_peers or settings.COMETNET_MAX_PEERS
+        self.min_peers = min_peers or settings.NEBULANET_MIN_PEERS
+        self.max_peers = max_peers or settings.NEBULANET_MAX_PEERS
 
         # Known peers by address
         self._known_peers: Dict[str, KnownPeer] = {}
@@ -134,7 +134,7 @@ class DiscoveryService:
         self._discovery_task = asyncio.create_task(self._discovery_loop())
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Discovery service started with {len(self._known_peers)} known peers",
         )
 
@@ -149,7 +149,7 @@ class DiscoveryService:
             except asyncio.CancelledError:
                 pass
 
-        logger.log("COMETNET", "Discovery service stopped")
+        logger.log("NEBULANET", "Discovery service stopped")
 
     def _add_known_peer(
         self, address: str, node_id: Optional[str] = None, source: str = "unknown"
@@ -176,14 +176,14 @@ class DiscoveryService:
         """
         Add a peer discovered through Peer Exchange.
 
-        Validates the address to prevent SSRF attacks (unless COMETNET_ALLOW_PRIVATE_PEX is True).
+        Validates the address to prevent SSRF attacks (unless NEBULANET_ALLOW_PRIVATE_PEX is True).
         """
         if peer_info.node_id == self._node_id:
             return  # Don't add ourselves
 
         # Validate address before adding
         # Allow private IPs only if explicitly configured
-        allow_private = settings.COMETNET_ALLOW_PRIVATE_PEX
+        allow_private = settings.NEBULANET_ALLOW_PRIVATE_PEX
         if not await is_valid_peer_address(
             peer_info.address, allow_private=allow_private
         ):
@@ -200,13 +200,13 @@ class DiscoveryService:
     async def get_peers_for_pex(self, max_peers: int = None) -> List[PeerInfo]:
         """Get a list of peers to share via PEX."""
         if max_peers is None:
-            max_peers = settings.COMETNET_PEX_BATCH_SIZE
+            max_peers = settings.NEBULANET_PEX_BATCH_SIZE
         connected_ids = set(
             self._get_connected_ids() if self._get_connected_ids else []
         )
 
         # Only share private IPs if explicitly allowed
-        allow_private = settings.COMETNET_ALLOW_PRIVATE_PEX
+        allow_private = settings.NEBULANET_ALLOW_PRIVATE_PEX
 
         peers = []
         for address, known_peer in self._known_peers.items():
@@ -242,7 +242,7 @@ class DiscoveryService:
         self, node_id: str, send_callback: Callable[[str, PeerRequest], Awaitable[Any]]
     ) -> None:
         """Request peers from a connected peer."""
-        request = PeerRequest(max_peers=settings.COMETNET_PEX_BATCH_SIZE)
+        request = PeerRequest(max_peers=settings.NEBULANET_PEX_BATCH_SIZE)
         await send_callback(node_id, request)
 
     async def handle_peer_response(self, response: PeerResponse) -> int:
@@ -374,12 +374,12 @@ class DiscoveryService:
 
     def _cleanup_old_peers(self) -> None:
         """Remove very old peers with many failures."""
-        cutoff = time.time() - settings.COMETNET_PEER_CLEANUP_AGE
+        cutoff = time.time() - settings.NEBULANET_PEER_CLEANUP_AGE
         to_remove = [
             addr
             for addr, peer in self._known_peers.items()
             if peer.last_seen < cutoff
-            and peer.connect_failures > settings.COMETNET_PEER_MAX_FAILURES
+            and peer.connect_failures > settings.NEBULANET_PEER_MAX_FAILURES
             and peer.source not in ("manual", "bootstrap")
         ]
         for addr in to_remove:
@@ -441,4 +441,4 @@ class DiscoveryService:
             loaded_count += 1
 
         if loaded_count > 0:
-            logger.log("COMETNET", f"Loaded {loaded_count} persisted peers")
+            logger.log("NEBULANET", f"Loaded {loaded_count} persisted peers")

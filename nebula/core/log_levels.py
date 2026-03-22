@@ -7,7 +7,7 @@ STANDARD_LOG_LEVELS = {
 }
 
 CUSTOM_LOG_LEVELS = {
-    "COMET": {
+    "NEBULA": {
         "color": "#7871d6",
         "icon": "🌠",
         "loguru_color": "<fg #7871d6>",
@@ -74,7 +74,7 @@ CUSTOM_LOG_LEVELS = {
         "loguru_color": "<fg #00FA9A>",
         "no": 35,
     },
-    "COMETNET": {
+    "NEBULANET": {
         "color": "#00BFFF",
         "icon": "🌐",
         "loguru_color": "<fg #00BFFF>",

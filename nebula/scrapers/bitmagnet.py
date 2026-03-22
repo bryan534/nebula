@@ -1,10 +1,10 @@
 import asyncio
 import xml.etree.ElementTree as ET
 
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
 
 
 class BitmagnetScraper(BaseScraper):

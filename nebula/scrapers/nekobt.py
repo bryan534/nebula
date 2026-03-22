@@ -1,7 +1,7 @@
-from comet.core.logger import log_scraper_error
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
-from comet.services.torrent_manager import extract_trackers_from_magnet
+from nebula.core.logger import log_scraper_error
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
+from nebula.services.torrent_manager import extract_trackers_from_magnet
 
 BASE_URL = "https://nekobt.to/api/v1/torrents/search"
 PAGE_LIMIT = 100

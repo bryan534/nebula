@@ -1,6 +1,6 @@
-# CometNet Quick Start Guide
+# NebulaNet Quick Start Guide
 
-Get CometNet running in 5 minutes.
+Get NebulaNet running in 5 minutes.
 
 ---
 
@@ -15,14 +15,14 @@ Get CometNet running in 5 minutes.
 
 ## A: Single Instance (Home User)
 
-You're running Comet on your home network with a single instance.
+You're running Nebula on your home network with a single instance.
 
-### Step 1: Enable CometNet
+### Step 1: Enable NebulaNet
 
 Add to your `.env` file:
 
 ```env
-COMETNET_ENABLED=True
+NEBULANET_ENABLED=True
 FASTAPI_WORKERS=1
 ```
 
@@ -30,24 +30,24 @@ FASTAPI_WORKERS=1
 
 ```env
 # Option 1: Bootstrap nodes (if available)
-COMETNET_BOOTSTRAP_NODES='["wss://bootstrap.example.com:8765"]'
+NEBULANET_BOOTSTRAP_NODES='["wss://bootstrap.example.com:8765"]'
 
 # Option 2: Direct peer connection
-COMETNET_MANUAL_PEERS='["ws://friend-comet.example.com:8765"]'
+NEBULANET_MANUAL_PEERS='["ws://friend-nebula.example.com:8765"]'
 ```
 
 ### Step 3: Enable UPnP (for NAT traversal)
 
 ```env
-COMETNET_UPNP_ENABLED=True
+NEBULANET_UPNP_ENABLED=True
 ```
 
 This allows other nodes to connect to you through your router.
 
-### Step 4: Start Comet
+### Step 4: Start Nebula
 
 ```bash
-uv run python -m comet.main
+uv run python -m nebula.main
 ```
 
 Or with Docker:
@@ -55,26 +55,26 @@ Or with Docker:
 docker compose up -d
 ```
 
-**You're done!** Check the logs for "CometNet started".
+**You're done!** Check the logs for "NebulaNet started".
 
 ---
 
 ## B: Single Instance (VPS/Server)
 
-You're running Comet on a VPS or dedicated server with a public IP.
+You're running Nebula on a VPS or dedicated server with a public IP.
 
-### Step 1: Enable CometNet
+### Step 1: Enable NebulaNet
 
 ```env
-COMETNET_ENABLED=True
+NEBULANET_ENABLED=True
 FASTAPI_WORKERS=1
 ```
 
 ### Step 2: Configure entry points
 
 ```env
-COMETNET_BOOTSTRAP_NODES='["wss://bootstrap.example.com:8765"]'
-COMETNET_MANUAL_PEERS='["ws://friend-comet.example.com:8765"]'
+NEBULANET_BOOTSTRAP_NODES='["wss://bootstrap.example.com:8765"]'
+NEBULANET_MANUAL_PEERS='["ws://friend-nebula.example.com:8765"]'
 ```
 
 ### Step 3: Set your public URL
@@ -82,13 +82,13 @@ COMETNET_MANUAL_PEERS='["ws://friend-comet.example.com:8765"]'
 If using a reverse proxy (recommended):
 
 ```env
-COMETNET_ADVERTISE_URL=wss://comet.yourdomain.com/cometnet/ws
+NEBULANET_ADVERTISE_URL=wss://nebula.yourdomain.com/nebulanet/ws
 ```
 
 If exposing the port directly:
 
 ```env
-COMETNET_ADVERTISE_URL=ws://YOUR_PUBLIC_IP:8765
+NEBULANET_ADVERTISE_URL=ws://YOUR_PUBLIC_IP:8765
 ```
 
 ### Step 4: Open the firewall
@@ -103,7 +103,7 @@ sudo ufw allow 8765/tcp
 Add to your Nginx config:
 
 ```nginx
-location /cometnet/ws {
+location /nebulanet/ws {
     proxy_pass http://127.0.0.1:8765;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
@@ -114,56 +114,56 @@ location /cometnet/ws {
 }
 ```
 
-### Step 6: Start Comet
+### Step 6: Start Nebula
 
 ```bash
-uv run python -m comet.main
+uv run python -m nebula.main
 ```
 
 ---
 
 ## C: Multiple Workers / Cluster
 
-You're running multiple Comet workers or replicas. Use Relay Mode.
+You're running multiple Nebula workers or replicas. Use Relay Mode.
 
 ### Step 1: Add standalone service to Docker Compose
 
 ```yaml
 services:
-  # ... your existing comet service ...
+  # ... your existing nebula service ...
   
-  cometnet:
-    image: g0ldyy/comet
-    container_name: cometnet
+  nebulanet:
+    image: g0ldyy/nebula
+    container_name: nebulanet
     restart: unless-stopped
-    entrypoint: ["uv", "run", "python", "-m", "comet.cometnet.standalone"]
+    entrypoint: ["uv", "run", "python", "-m", "nebula.nebulanet.standalone"]
     ports:
       - "8765:8765"
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
-      COMETNET_BOOTSTRAP_NODES: '["wss://bootstrap.example.com:8765"]'
-      COMETNET_ADVERTISE_URL: wss://comet.yourdomain.com:8765
-      COMETNET_API_KEY: "your-secret-key"
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
+      NEBULANET_BOOTSTRAP_NODES: '["wss://bootstrap.example.com:8765"]'
+      NEBULANET_ADVERTISE_URL: wss://nebula.yourdomain.com:8765
+      NEBULANET_API_KEY: "your-secret-key"
     volumes:
-      - cometnet_data:/app/data
+      - nebulanet_data:/app/data
     env_file:
       - .env
 
 volumes:
-  cometnet_data:
+  nebulanet_data:
 ```
 
-### Step 2: Configure Comet instances
+### Step 2: Configure Nebula instances
 
 Add to your `.env`:
 
 ```env
-COMETNET_RELAY_URL=http://cometnet:8766
-COMETNET_API_KEY="your-secret-key"
+NEBULANET_RELAY_URL=http://nebulanet:8766
+NEBULANET_API_KEY="your-secret-key"
 ```
 
-Remove any `COMETNET_ENABLED` setting - it's ignored when using relay.
+Remove any `NEBULANET_ENABLED` setting - it's ignored when using relay.
 
 ### Step 3: Deploy
 
@@ -175,7 +175,7 @@ docker compose up -d
 
 ## D: Joining a Private Network
 
-Someone has invited you to their private CometNet network.
+Someone has invited you to their private NebulaNet network.
 
 ### Step 1: Get network details from the admin
 
@@ -186,18 +186,18 @@ You'll need:
 ### Step 2: Configure your instance
 
 ```env
-COMETNET_ENABLED=True
+NEBULANET_ENABLED=True
 FASTAPI_WORKERS=1
 
-COMETNET_PRIVATE_NETWORK=True
-COMETNET_NETWORK_ID=my-private-network
-COMETNET_NETWORK_PASSWORD=the-shared-secret
+NEBULANET_PRIVATE_NETWORK=True
+NEBULANET_NETWORK_ID=my-private-network
+NEBULANET_NETWORK_PASSWORD=the-shared-secret
 
 # Add the admin's node as a peer
-COMETNET_MANUAL_PEERS='["wss://admin-node.example.com:8765"]'
+NEBULANET_MANUAL_PEERS='["wss://admin-node.example.com:8765"]'
 ```
 
-### Step 3: Start Comet
+### Step 3: Start Nebula
 
 Your node will only communicate with other nodes in the same private network.
 
@@ -209,14 +209,14 @@ Your node will only communicate with other nodes in the same private network.
 
 Look for:
 ```
-CometNet started - Node ID: abc123...
+NebulaNet started - Node ID: abc123...
 Discovery service started with 2 known peers
 Connected to peer def456...
 ```
 
 ### Check the Admin Dashboard
 
-Navigate to **Admin Dashboard → CometNet** to see:
+Navigate to **Admin Dashboard → NebulaNet** to see:
 - Your Node ID
 - Connected peers count
 - Torrents propagated/repropagated/received
@@ -224,55 +224,55 @@ Navigate to **Admin Dashboard → CometNet** to see:
 ### Test propagation
 
 1. Search for content to trigger scraping.
-2. Watch the CometNet stats for "Torrents Propagated".
+2. Watch the NebulaNet stats for "Torrents Propagated".
 3. Your peers should see the same torrents appear.
 
 ---
 
 ## Common Issues
 
-### "CometNet is disabled"
+### "NebulaNet is disabled"
 
-Make sure `COMETNET_ENABLED=True` and `FASTAPI_WORKERS=1`.
+Make sure `NEBULANET_ENABLED=True` and `FASTAPI_WORKERS=1`.
 
 ### No peers connecting
 
 1. Check if port 8765 is reachable (use a port checker tool)
-2. Verify `COMETNET_ADVERTISE_URL` is set correctly
-3. Enable UPnP if behind NAT: `COMETNET_UPNP_ENABLED=True`
+2. Verify `NEBULANET_ADVERTISE_URL` is set correctly
+3. Enable UPnP if behind NAT: `NEBULANET_UPNP_ENABLED=True`
 
 ### "Reachability check failed" on startup
 
-CometNet verifies your advertise URL is accessible before joining the network. If this fails:
+NebulaNet verifies your advertise URL is accessible before joining the network. If this fails:
 
 1. Check your firewall and port forwarding
 2. If using a reverse proxy (e.g., Traefik), ensure WebSocket headers are forwarded
 3. **Traefik or slow reverse proxy?** The port may take time to open. Increase retry settings:
    ```bash
-   COMETNET_REACHABILITY_RETRIES=10  # Default: 5
-   COMETNET_REACHABILITY_RETRY_DELAY=15  # Default: 10 seconds
-   COMETNET_REACHABILITY_TIMEOUT=15  # Default: 10 seconds
+   NEBULANET_REACHABILITY_RETRIES=10  # Default: 5
+   NEBULANET_REACHABILITY_RETRY_DELAY=15  # Default: 10 seconds
+   NEBULANET_REACHABILITY_TIMEOUT=15  # Default: 10 seconds
    ```
-4. For local testing only: `COMETNET_SKIP_REACHABILITY_CHECK=True`
+4. For local testing only: `NEBULANET_SKIP_REACHABILITY_CHECK=True`
 
 ### "System clock is not synchronized" on startup
 
-CometNet requires an accurate clock for security. If this check fails:
+NebulaNet requires an accurate clock for security. If this check fails:
 1. Sync your clock: `sudo timedatectl set-ntp true`
-2. Or increase tolerance: `COMETNET_TIME_CHECK_TOLERANCE=120`
-3. Or skip (local only): `COMETNET_SKIP_TIME_CHECK=True`
+2. Or increase tolerance: `NEBULANET_TIME_CHECK_TOLERANCE=120`
+3. Or skip (local only): `NEBULANET_SKIP_TIME_CHECK=True`
 
 ### Using relay but getting errors
 
 Make sure:
 - The standalone service is running
-- `COMETNET_RELAY_URL` is reachable from your Comet instances
+- `NEBULANET_RELAY_URL` is reachable from your Nebula instances
 - The standalone service has correct bootstrap/peer configuration
 
 ---
 
 ## Next Steps
 
-- Read the [full documentation](cometnet.md) for advanced configuration
-- Set up [Trust Pools](cometnet.md#trust-pools) for community-based sharing
-- Configure [contribution modes](cometnet.md#contribution-modes) based on your needs
+- Read the [full documentation](nebulanet.md) for advanced configuration
+- Set up [Trust Pools](nebulanet.md#trust-pools) for community-based sharing
+- Configure [contribution modes](nebulanet.md#contribution-modes) based on your needs

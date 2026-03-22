@@ -126,7 +126,7 @@ def _set_ids(tags, stremio_id: str):
         tags.setIMDBNumber(stremio_id)
         tags.setUniqueID(stremio_id, type="imdb")
     else:
-        tags.setUniqueID(stremio_id, type="comet")
+        tags.setUniqueID(stremio_id, type="nebula")
 
 
 def _set_video_tags(tags, meta: dict, title: str):
@@ -268,7 +268,7 @@ def _process_catalog_items(videos: list, catalog_type: str):
 
 
 def _notify_error(message: str):
-    xbmcgui.Dialog().notification("Comet", message, xbmcgui.NOTIFICATION_ERROR)
+    xbmcgui.Dialog().notification("Nebula", message, xbmcgui.NOTIFICATION_ERROR)
 
 
 def list_root():

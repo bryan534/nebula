@@ -1,11 +1,11 @@
-# Comet Documentation
+# Nebula Documentation
 
-This documentation covers the full Comet project, with two reading paths:
+This documentation covers the full Nebula project, with two reading paths:
 
 - **Beginner path**: for first-time self-hosters who want guided, step-by-step setup.
 - **Advanced path**: for operators who want runtime internals, tuning, and operational details.
 
-CometNet remains documented in a dedicated section because its setup and operations are significantly more complex than the base Comet deployment.
+NebulaNet remains documented in a dedicated section because its setup and operations are significantly more complex than the base Nebula deployment.
 
 ## Beginner Path
 
@@ -25,12 +25,12 @@ If you plan to use Stremio from another device/network, complete the reverse-pro
 5. [Database and Operations](advanced/05-database-and-operations.md)
 6. [HTTP API Reference](advanced/06-http-api-reference.md)
 
-## Dedicated CometNet Docs
+## Dedicated NebulaNet Docs
 
-- [CometNet Documentation Index](cometnet/README.md)
-- [CometNet Quick Start](cometnet/quickstart.md)
-- [CometNet Full Reference](cometnet/cometnet.md)
-- [CometNet Docker Deployment](cometnet/docker.md)
+- [NebulaNet Documentation Index](nebulanet/README.md)
+- [NebulaNet Quick Start](nebulanet/quickstart.md)
+- [NebulaNet Full Reference](nebulanet/nebulanet.md)
+- [NebulaNet Docker Deployment](nebulanet/docker.md)
 
 ## Troubleshooting
 
@@ -38,5 +38,5 @@ If you plan to use Stremio from another device/network, complete the reverse-pro
 
 ## Documentation Rules Used Here
 
-- Runtime behavior and defaults are documented from the actual code paths (especially `comet/core/models.py` and endpoint/service implementations).
+- Runtime behavior and defaults are documented from the actual code paths (especially `nebula/core/models.py` and endpoint/service implementations).
 - `.env-sample` is treated as a user-facing template, but behavior is confirmed against runtime code.

@@ -7,11 +7,11 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
 
-from comet.core.models import ConfigModel, settings
-from comet.services.kodi_pairing import (associate_setup_code_with_b64config,
+from nebula.core.models import ConfigModel, settings
+from nebula.services.kodi_pairing import (associate_setup_code_with_b64config,
                                          consume_b64config_for_setup_code,
                                          create_setup_code)
-from comet.utils.cache import NO_CACHE_HEADERS
+from nebula.utils.cache import NO_CACHE_HEADERS
 
 router = APIRouter()
 
@@ -40,7 +40,7 @@ def _extract_b64config_from_manifest_url(manifest_url: str):
     ]
     if prefix_segments:
         if path_without_manifest[: len(prefix_segments)] != prefix_segments:
-            raise ValueError("Manifest URL does not match this Comet instance")
+            raise ValueError("Manifest URL does not match this Nebula instance")
         path_without_manifest = path_without_manifest[len(prefix_segments) :]
 
     if not path_without_manifest:
@@ -69,7 +69,7 @@ def _validate_b64config(b64config: str):
         TypeError,
         ValueError,
     ) as exc:
-        raise ValueError("Invalid Comet configuration payload") from exc
+        raise ValueError("Invalid Nebula configuration payload") from exc
 
 
 def _base_url_from_request(request: Request):
@@ -107,7 +107,7 @@ async def generate_setup_code(request: Request, payload: GenerateSetupCodeReques
     "/kodi/associate_manifest",
     tags=["Kodi"],
     summary="Associate Kodi Setup Code",
-    description="Associates a generated setup code with a Comet manifest URL.",
+    description="Associates a generated setup code with a Nebula manifest URL.",
 )
 async def associate_manifest(payload: AssociateManifestRequest):
     try:
@@ -128,7 +128,7 @@ async def associate_manifest(payload: AssociateManifestRequest):
     "/kodi/get_manifest/{code}",
     tags=["Kodi"],
     summary="Fetch Paired Kodi Configuration",
-    description="Returns the Comet configuration for a setup code.",
+    description="Returns the Nebula configuration for a setup code.",
 )
 async def get_manifest(code: str):
     b64config = await consume_b64config_for_setup_code(code)

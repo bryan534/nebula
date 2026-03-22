@@ -1,5 +1,5 @@
 """
-CometNet Cryptographic Identity Module
+NebulaNet Cryptographic Identity Module
 
 Manages node identity using ECDSA (SECP256k1) keys for:
 - Unique node identification
@@ -19,14 +19,14 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePrivateKey, EllipticCurvePublicKey)
 
-from comet.cometnet.utils import run_in_executor
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.nebulanet.utils import run_in_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 class NodeIdentity:
     """
-    Manages the cryptographic identity of a CometNet node.
+    Manages the cryptographic identity of a NebulaNet node.
 
     Each node has:
     - A private key (stored locally, never shared, optionally encrypted with a password)
@@ -34,7 +34,7 @@ class NodeIdentity:
     - A node ID (SHA256 hash of the public key, used as identifier)
     """
 
-    KEYS_DIR = Path("data/cometnet")
+    KEYS_DIR = Path("data/nebulanet")
     PRIVATE_KEY_FILE = "node_private_key.pem"
 
     def __init__(self, keys_dir: Optional[Path] = None):
@@ -85,11 +85,11 @@ class NodeIdentity:
         if key_path.exists():
             await self._load_keys(key_path)
             logger.log(
-                "COMETNET", f"Loaded existing node identity: {self._node_id[:8]}"
+                "NEBULANET", f"Loaded existing node identity: {self._node_id[:8]}"
             )
         else:
             await self._generate_keys(key_path)
-            logger.log("COMETNET", f"Generated new node identity: {self._node_id[:8]}")
+            logger.log("NEBULANET", f"Generated new node identity: {self._node_id[:8]}")
 
     async def _generate_keys(self, key_path: Path) -> None:
         """Generate a new ECDSA key pair and save to disk."""
@@ -106,12 +106,12 @@ class NodeIdentity:
         key_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Determine encryption algorithm based on settings
-        key_password = settings.COMETNET_KEY_PASSWORD
+        key_password = settings.NEBULANET_KEY_PASSWORD
         if key_password:
             encryption = serialization.BestAvailableEncryption(
                 key_password.encode("utf-8")
             )
-            logger.log("COMETNET", "Private key will be encrypted with password")
+            logger.log("NEBULANET", "Private key will be encrypted with password")
         else:
             encryption = serialization.NoEncryption()
 
@@ -130,7 +130,7 @@ class NodeIdentity:
 
     async def _load_keys(self, key_path: Path) -> None:
         """Load existing keys from disk."""
-        key_password = settings.COMETNET_KEY_PASSWORD
+        key_password = settings.NEBULANET_KEY_PASSWORD
         password_bytes = key_password.encode("utf-8") if key_password else None
 
         async with aiofiles.open(key_path, "rb") as f:
@@ -149,18 +149,18 @@ class NodeIdentity:
                         key_data, password=None
                     )
                     logger.warning(
-                        "COMETNET_KEY_PASSWORD is set but key is unencrypted. "
+                        "NEBULANET_KEY_PASSWORD is set but key is unencrypted. "
                         "Consider regenerating the key for better security."
                     )
                 except Exception:
                     raise ValueError(
                         f"Failed to load private key: {e}. "
-                        "Check if COMETNET_KEY_PASSWORD is correct."
+                        "Check if NEBULANET_KEY_PASSWORD is correct."
                     )
             else:
                 raise ValueError(
                     f"Failed to load private key: {e}. "
-                    "If the key is encrypted, set COMETNET_KEY_PASSWORD."
+                    "If the key is encrypted, set NEBULANET_KEY_PASSWORD."
                 )
 
         if not isinstance(self._private_key, EllipticCurvePrivateKey):

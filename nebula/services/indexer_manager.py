@@ -5,9 +5,9 @@ from typing import Optional
 
 import aiohttp
 
-from comet.core.constants import INDEXER_TIMEOUT
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.constants import INDEXER_TIMEOUT
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 class IndexerManager:
@@ -80,7 +80,7 @@ class IndexerManager:
                     if sorted(settings.JACKETT_INDEXERS) != sorted(active_ids):
                         settings.JACKETT_INDEXERS = active_ids
                         logger.log(
-                            "COMET",
+                            "NEBULA",
                             f"Updated Jackett indexers ({len(active_ids)}): {', '.join(active_ids)}",
                         )
 
@@ -194,7 +194,7 @@ class IndexerManager:
                     ]
 
                     logger.log(
-                        "COMET",
+                        "NEBULA",
                         f"Updated Prowlarr indexers ({len(active_ids)}): {', '.join(active_names)}",
                     )
 

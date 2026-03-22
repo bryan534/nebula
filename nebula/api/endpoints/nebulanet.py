@@ -1,5 +1,5 @@
 """
-CometNet API Endpoints
+NebulaNet API Endpoints
 
 Provides WebSocket endpoint for P2P connections and stats API.
 """
@@ -7,23 +7,23 @@ Provides WebSocket endpoint for P2P connections and stats API.
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
-from comet.cometnet.manager import get_cometnet_service
-from comet.core.logger import logger
+from nebula.nebulanet.manager import get_nebulanet_service
+from nebula.core.logger import logger
 
-router = APIRouter(prefix="/cometnet", tags=["CometNet"])
+router = APIRouter(prefix="/nebulanet", tags=["NebulaNet"])
 
 
 @router.websocket("/ws")
-async def cometnet_websocket(websocket: WebSocket):
+async def nebulanet_websocket(websocket: WebSocket):
     """
-    WebSocket endpoint for CometNet P2P connections.
+    WebSocket endpoint for NebulaNet P2P connections.
 
     This is the entry point for incoming peer connections.
     """
-    service = get_cometnet_service()
+    service = get_nebulanet_service()
 
     if not service or not service._running:
-        await websocket.close(code=1013, reason="CometNet not enabled")
+        await websocket.close(code=1013, reason="NebulaNet not enabled")
         return
 
     await websocket.accept()
@@ -33,28 +33,28 @@ async def cometnet_websocket(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        logger.debug(f"CometNet WebSocket error: {e}")
+        logger.debug(f"NebulaNet WebSocket error: {e}")
 
 
 @router.get("/health")
-async def cometnet_health():
+async def nebulanet_health():
     """
-    Health check endpoint for CometNet.
+    Health check endpoint for NebulaNet.
 
     Returns a simple status for load balancers and monitoring systems.
     HTTP 200 = healthy, HTTP 503 = unhealthy
     """
-    service = get_cometnet_service()
+    service = get_nebulanet_service()
 
     if not service:
         return JSONResponse(
-            content={"status": "disabled", "message": "CometNet not initialized"},
+            content={"status": "disabled", "message": "NebulaNet not initialized"},
             status_code=200,
         )
 
     if not service._running:
         return JSONResponse(
-            content={"status": "stopped", "message": "CometNet not running"},
+            content={"status": "stopped", "message": "NebulaNet not running"},
             status_code=503,
         )
 

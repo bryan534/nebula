@@ -18,7 +18,7 @@ HTTP_SESSION = requests.Session()
 
 
 def log(message: str, level=xbmc.LOGINFO):
-    xbmc.log(f"[Comet] {message}", level)
+    xbmc.log(f"[Nebula] {message}", level)
 
 
 def build_url(action: str, **params):
@@ -41,7 +41,7 @@ def fetch_data(url: str):
         target = parse.urlparse(url).netloc or url
         log(f"Request failed for {url}: {exc}", xbmc.LOGERROR)
         xbmcgui.Dialog().notification(
-            "Comet",
+            "Nebula",
             f"Request failed ({status_code}) on {target}"
             if status_code
             else f"Request failed on {target}",
@@ -123,8 +123,8 @@ def ensure_configured():
         return True
 
     xbmcgui.Dialog().notification(
-        "Comet",
-        "Comet is not configured. Open add-on settings.",
+        "Nebula",
+        "Nebula is not configured. Open add-on settings.",
         xbmcgui.NOTIFICATION_INFO,
     )
     xbmc.executebuiltin(

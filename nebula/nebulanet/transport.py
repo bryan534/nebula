@@ -1,5 +1,5 @@
 """
-CometNet Transport Module
+NebulaNet Transport Module
 
 Manages WebSocket connections for peer-to-peer communication.
 Handles both server-side (incoming) and client-side (outgoing) connections.
@@ -23,13 +23,13 @@ from websockets.exceptions import (ConnectionClosed, InvalidStatus,
                                    WebSocketException)
 from websockets.http11 import Response
 
-from comet.cometnet.crypto import NodeIdentity
-from comet.cometnet.protocol import (AnyMessage, HandshakeMessage, MessageType,
+from nebula.nebulanet.crypto import NodeIdentity
+from nebula.nebulanet.protocol import (AnyMessage, HandshakeMessage, MessageType,
                                      PingMessage, PongMessage, parse_message)
-from comet.cometnet.utils import extract_ip_from_address, is_valid_peer_address
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.utils.network import extract_ip_from_headers
+from nebula.nebulanet.utils import extract_ip_from_address, is_valid_peer_address
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.utils.network import extract_ip_from_headers
 
 
 class WebSocketHeadFilter(logging.Filter):
@@ -109,7 +109,7 @@ class PeerConnection:
         Check if the peer has exceeded the rate limit.
         Returns True if allowed, False if limited.
         """
-        if not settings.COMETNET_TRANSPORT_RATE_LIMIT_ENABLED:
+        if not settings.NEBULANET_TRANSPORT_RATE_LIMIT_ENABLED:
             return True
 
         now = time.time()
@@ -199,12 +199,12 @@ class ConnectionManager:
         self._keystore = keystore
 
         # Security limits from settings
-        self.max_message_size = settings.COMETNET_TRANSPORT_MAX_MESSAGE_SIZE
-        self.max_connections_per_ip = settings.COMETNET_TRANSPORT_MAX_CONNECTIONS_PER_IP
+        self.max_message_size = settings.NEBULANET_TRANSPORT_MAX_MESSAGE_SIZE
+        self.max_connections_per_ip = settings.NEBULANET_TRANSPORT_MAX_CONNECTIONS_PER_IP
 
         # Rate limits
-        self.rate_limit_count = settings.COMETNET_TRANSPORT_RATE_LIMIT_COUNT
-        self.rate_limit_window = settings.COMETNET_TRANSPORT_RATE_LIMIT_WINDOW
+        self.rate_limit_count = settings.NEBULANET_TRANSPORT_RATE_LIMIT_COUNT
+        self.rate_limit_window = settings.NEBULANET_TRANSPORT_RATE_LIMIT_WINDOW
 
         # Active connections by node_id
         self._connections: Dict[str, PeerConnection] = {}
@@ -232,9 +232,9 @@ class ConnectionManager:
         self._running = False
 
         # Private network settings
-        self._private_network = settings.COMETNET_PRIVATE_NETWORK
-        self._network_id = settings.COMETNET_NETWORK_ID or ""
-        self._network_password = settings.COMETNET_NETWORK_PASSWORD or ""
+        self._private_network = settings.NEBULANET_PRIVATE_NETWORK
+        self._network_id = settings.NEBULANET_NETWORK_ID or ""
+        self._network_password = settings.NEBULANET_NETWORK_PASSWORD or ""
 
         # Callback when a peer connects (for Discovery notification)
         self._on_peer_connected: Optional[Callable[[str, str], Awaitable[None]]] = None
@@ -265,9 +265,9 @@ class ConnectionManager:
                 "/",
                 "/health",
                 "/healthz",
-                "/cometnet",
-                "/cometnet/health",
-                "/cometnet/healthz",
+                "/nebulanet",
+                "/nebulanet/health",
+                "/nebulanet/healthz",
             }
 
             is_health_check = (
@@ -288,7 +288,7 @@ class ConnectionManager:
                     200,
                     "OK",
                     websockets.Headers([("Content-Type", "text/plain")]),
-                    b"CometNet WebSocket Server\n",
+                    b"NebulaNet WebSocket Server\n",
                 )
             else:
                 # Other requests - return 426 Upgrade Required
@@ -365,7 +365,7 @@ class ConnectionManager:
                 process_request=self._process_request,
             )
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"WebSocket server listening on port {self.listen_port}",
             )
         except Exception as e:
@@ -379,7 +379,7 @@ class ConnectionManager:
         self._tasks.add(ping_task)
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             "Transport layer started",
         )
 
@@ -441,7 +441,7 @@ class ConnectionManager:
             await conn.close()
         self._connections.clear()
 
-        logger.log("COMETNET", "Transport layer stopped")
+        logger.log("NEBULANET", "Transport layer stopped")
 
     async def connect_to_peer(self, address: str) -> Optional[str]:
         """
@@ -488,7 +488,7 @@ class ConnectionManager:
                 conn = self._connections.get(node_id)
                 alias_str = f" ({conn.alias})" if conn and conn.alias else ""
                 logger.log(
-                    "COMETNET",
+                    "NEBULANET",
                     f"Connected to peer {node_id[:8]}{alias_str} at {address}",
                 )
                 return node_id
@@ -577,7 +577,7 @@ class ConnectionManager:
             conn = self._connections.get(node_id)
             alias_str = f" ({conn.alias})" if conn and conn.alias else ""
             logger.log(
-                "COMETNET", f"Accepted connection from peer {node_id[:8]}{alias_str}"
+                "NEBULANET", f"Accepted connection from peer {node_id[:8]}{alias_str}"
             )
             return node_id
         else:
@@ -617,7 +617,7 @@ class ConnectionManager:
                     public_key=self.identity.public_key_hex,
                     listen_port=self.listen_port,
                     public_url=self.advertise_url,
-                    alias=settings.COMETNET_NODE_ALIAS,
+                    alias=settings.NEBULANET_NODE_ALIAS,
                 )
                 # Add network token for private mode
                 if (
@@ -659,7 +659,7 @@ class ConnectionManager:
                     public_key=self.identity.public_key_hex,
                     listen_port=self.listen_port,
                     public_url=self.advertise_url,
-                    alias=settings.COMETNET_NODE_ALIAS,
+                    alias=settings.NEBULANET_NODE_ALIAS,
                 )
                 # Add network token for private mode
                 if (
@@ -752,7 +752,7 @@ class ConnectionManager:
                 peer_handshake.public_url,
                 connectable_address,
                 allow_private=(
-                    self._private_network or settings.COMETNET_ALLOW_PRIVATE_PEX
+                    self._private_network or settings.NEBULANET_ALLOW_PRIVATE_PEX
                 ),
             )
 
@@ -838,7 +838,7 @@ class ConnectionManager:
                             del self._connections_per_ip[ip]
                 del self._connections[conn.node_id]
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"Disconnected from peer {conn.node_id[:8]} ({conn.alias or 'no alias'})",
             )
 
@@ -869,7 +869,7 @@ class ConnectionManager:
         """Periodically ping all peers to check health."""
         while self._running:
             try:
-                await asyncio.sleep(settings.COMETNET_TRANSPORT_PING_INTERVAL)
+                await asyncio.sleep(settings.NEBULANET_TRANSPORT_PING_INTERVAL)
 
                 # Get all connections
                 connections = list(self._connections.values())
@@ -879,13 +879,13 @@ class ConnectionManager:
                 now = time.time()
                 stale_nodes: List[str] = []
                 high_latency_nodes: List[str] = []
-                max_latency = settings.COMETNET_TRANSPORT_MAX_LATENCY_MS
+                max_latency = settings.NEBULANET_TRANSPORT_MAX_LATENCY_MS
 
                 peers_to_ping: List[PeerConnection] = []
                 for conn in connections:
                     if (
                         now - conn.last_activity
-                        > settings.COMETNET_TRANSPORT_CONNECTION_TIMEOUT
+                        > settings.NEBULANET_TRANSPORT_CONNECTION_TIMEOUT
                     ):
                         stale_nodes.append(conn.node_id)
                         continue
@@ -949,7 +949,7 @@ class ConnectionManager:
                 # Disconnect high-latency connections
                 if high_latency_nodes:
                     logger.log(
-                        "COMETNET",
+                        "NEBULANET",
                         f"Disconnecting {len(high_latency_nodes)} peers with high latency (>{max_latency:.0f}ms)",
                     )
                     await asyncio.gather(

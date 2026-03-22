@@ -3,9 +3,9 @@ import threading
 import time
 from dataclasses import dataclass, field
 
-from comet.core.database import build_upsert_assignments
-from comet.core.logger import logger
-from comet.core.models import database, settings
+from nebula.core.database import build_upsert_assignments
+from nebula.core.logger import logger
+from nebula.core.models import database, settings
 
 _BANDWIDTH_UPSERT_ASSIGNMENTS = build_upsert_assignments(("total_bytes", "updated_at"))
 UPSERT_BANDWIDTH_STATS_QUERY = f"""

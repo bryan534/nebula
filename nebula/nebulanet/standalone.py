@@ -1,20 +1,20 @@
 """
-CometNet Standalone Server
+NebulaNet Standalone Server
 
-Runs CometNet as an independent service with HTTP API for receiving
-torrent broadcasts from Comet workers. This is the recommended mode
+Runs NebulaNet as an independent service with HTTP API for receiving
+torrent broadcasts from Nebula workers. This is the recommended mode
 for multi-worker or multi-replica deployments.
 
 Usage:
-    python -m comet.cometnet.standalone
+    python -m nebula.nebulanet.standalone
 
 Environment Variables:
-    COMETNET_LISTEN_PORT: WebSocket port for P2P (default: 8765)
-    COMETNET_HTTP_PORT: HTTP API port (default: 8766)
-    COMETNET_KEYS_DIR: Directory for node identity keys
-    COMETNET_BOOTSTRAP_NODES: List of bootstrap nodes (JSON array)
-    COMETNET_MANUAL_PEERS: List of peers to connect to (JSON array)
-    COMETNET_API_KEY: Mandatory API key for authenticating HTTP requests
+    NEBULANET_LISTEN_PORT: WebSocket port for P2P (default: 8765)
+    NEBULANET_HTTP_PORT: HTTP API port (default: 8766)
+    NEBULANET_KEYS_DIR: Directory for node identity keys
+    NEBULANET_BOOTSTRAP_NODES: List of bootstrap nodes (JSON array)
+    NEBULANET_MANUAL_PEERS: List of peers to connect to (JSON array)
+    NEBULANET_API_KEY: Mandatory API key for authenticating HTTP requests
 
 Security Notes:
     - The standalone service is designed for INTERNAL cluster use only.
@@ -34,13 +34,13 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from comet.cometnet.manager import CometNetService
-from comet.cometnet.protocol import TorrentMetadata
-from comet.core.database import setup_database, teardown_database
-from comet.core.execution import setup_executor, shutdown_executor
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.services.torrent_manager import (check_torrents_exist,
+from nebula.nebulanet.manager import NebulaNetService
+from nebula.nebulanet.protocol import TorrentMetadata
+from nebula.core.database import setup_database, teardown_database
+from nebula.core.execution import setup_executor, shutdown_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.services.torrent_manager import (check_torrents_exist,
                                             torrent_update_queue)
 
 
@@ -102,7 +102,7 @@ class UpdateMemberRoleRequest(BaseModel):
     role: str
 
 
-_api_key: str = settings.COMETNET_API_KEY
+_api_key: str = settings.NEBULANET_API_KEY
 
 
 def _require_broadcast_media_id(imdb_id: Optional[str]) -> None:
@@ -131,17 +131,17 @@ async def verify_api_key(x_api_key: str = Header(None, alias="X-API-Key")):
     return True
 
 
-class StandaloneCometNet:
+class StandaloneNebulaNet:
     """
-    Standalone CometNet server with HTTP API.
+    Standalone NebulaNet server with HTTP API.
 
-    This runs CometNet as an independent service that:
+    This runs NebulaNet as an independent service that:
     - Manages P2P connections via WebSocket
-    - Exposes HTTP API for Comet workers to submit torrents
+    - Exposes HTTP API for Nebula workers to submit torrents
     - Can run as a separate container/pod in cluster deployments
 
     Security:
-    - If COMETNET_API_KEY is set, all endpoints except /health require authentication.
+    - If NEBULANET_API_KEY is set, all endpoints except /health require authentication.
     - Set X-API-Key header with the configured API key to access protected endpoints.
     - When running in Docker, keep port 8766 internal to the Docker network.
     """
@@ -160,7 +160,7 @@ class StandaloneCometNet:
         self.ws_port = ws_port
         self.http_port = http_port
 
-        self.service = CometNetService(
+        self.service = NebulaNetService(
             enabled=True,
             listen_port=ws_port,
             bootstrap_nodes=bootstrap_nodes or [],
@@ -192,7 +192,7 @@ class StandaloneCometNet:
 
             await self.service.start()
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"Standalone server started - WS:{self.ws_port} HTTP:{self.http_port}",
             )
 
@@ -204,11 +204,11 @@ class StandaloneCometNet:
             await teardown_database()
             shutdown_executor()
 
-            logger.log("COMETNET", "Standalone server stopped")
+            logger.log("NEBULANET", "Standalone server stopped")
 
         app = FastAPI(
-            title="CometNet Standalone",
-            description="CometNet P2P Network - Standalone Mode",
+            title="NebulaNet Standalone",
+            description="NebulaNet P2P Network - Standalone Mode",
             version="1.0.0",
             lifespan=lifespan,
             docs_url="/docs",
@@ -220,14 +220,14 @@ class StandaloneCometNet:
             """Health check endpoint."""
             return {
                 "status": "healthy",
-                "service": "cometnet-standalone",
+                "service": "nebulanet-standalone",
                 "uptime_seconds": int(time.time() - self._start_time),
                 "running": self.service._running,
             }
 
         @app.get("/stats", dependencies=[Depends(verify_api_key)])
         async def stats():
-            """Get CometNet statistics."""
+            """Get NebulaNet statistics."""
             service_stats = await self.service.get_stats()
             return {
                 **service_stats,
@@ -390,13 +390,13 @@ class StandaloneCometNet:
             """
             Broadcast a single torrent to the P2P network.
 
-            This endpoint is called by Comet workers when they discover new torrents.
+            This endpoint is called by Nebula workers when they discover new torrents.
             """
             self._broadcasts_received += 1
 
             if not self.service._running:
                 raise HTTPException(
-                    status_code=503, detail="CometNet service not running"
+                    status_code=503, detail="NebulaNet service not running"
                 )
 
             _require_broadcast_media_id(request.imdb_id)
@@ -407,7 +407,7 @@ class StandaloneCometNet:
                 await self.service.broadcast_torrent(metadata)
                 self._broadcasts_success += 1
                 logger.log(
-                    "COMETNET",
+                    "NEBULANET",
                     f"HTTP Broadcast: {request.title} ({request.info_hash})",
                 )
 
@@ -427,7 +427,7 @@ class StandaloneCometNet:
 
             if not self.service._running:
                 raise HTTPException(
-                    status_code=503, detail="CometNet service not running"
+                    status_code=503, detail="NebulaNet service not running"
                 )
 
             queued = 0
@@ -448,7 +448,7 @@ class StandaloneCometNet:
 
             if queued > 0:
                 logger.log(
-                    "COMETNET", f"HTTP Batch Broadcast: Queued {queued} torrents"
+                    "NEBULANET", f"HTTP Batch Broadcast: Queued {queued} torrents"
                 )
 
             return {
@@ -484,38 +484,38 @@ class StandaloneCometNet:
 
 
 def main():
-    """Main entry point for standalone CometNet."""
-    logger.log("COMETNET", "Initializing CometNet Standalone...")
+    """Main entry point for standalone NebulaNet."""
+    logger.log("NEBULANET", "Initializing NebulaNet Standalone...")
 
-    ws_port = settings.COMETNET_LISTEN_PORT
-    http_port = settings.COMETNET_HTTP_PORT
+    ws_port = settings.NEBULANET_LISTEN_PORT
+    http_port = settings.NEBULANET_HTTP_PORT
 
     api_key_str = _api_key
-    if "COMETNET_API_KEY" in settings.model_fields_set:
+    if "NEBULANET_API_KEY" in settings.model_fields_set:
         api_key_str = "Set (Hidden)"
     else:
         api_key_str = f"{_api_key} (Randomly Generated)"
 
     logger.log(
-        "COMETNET",
+        "NEBULANET",
         f"Standalone Server: HTTP Port={http_port} - API Key: {api_key_str}",
     )
 
-    standalone = StandaloneCometNet(
+    standalone = StandaloneNebulaNet(
         ws_port=ws_port,
         http_port=http_port,
-        bootstrap_nodes=settings.COMETNET_BOOTSTRAP_NODES,
-        manual_peers=settings.COMETNET_MANUAL_PEERS,
-        max_peers=settings.COMETNET_MAX_PEERS,
-        min_peers=settings.COMETNET_MIN_PEERS,
-        keys_dir=settings.COMETNET_KEYS_DIR,
-        advertise_url=settings.COMETNET_ADVERTISE_URL,
+        bootstrap_nodes=settings.NEBULANET_BOOTSTRAP_NODES,
+        manual_peers=settings.NEBULANET_MANUAL_PEERS,
+        max_peers=settings.NEBULANET_MAX_PEERS,
+        min_peers=settings.NEBULANET_MIN_PEERS,
+        keys_dir=settings.NEBULANET_KEYS_DIR,
+        advertise_url=settings.NEBULANET_ADVERTISE_URL,
     )
 
     try:
         asyncio.run(standalone.run())
     except KeyboardInterrupt:
-        logger.log("COMETNET", "Shutdown complete")
+        logger.log("NEBULANET", "Shutdown complete")
         sys.exit(0)
 
 

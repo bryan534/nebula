@@ -10,12 +10,12 @@ import zipfile
 import aiohttp
 import RTN
 
-from comet.core.database import database
-from comet.core.execution import get_executor
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.services.lock import DistributedLock
-from comet.utils.lzstring import decompressFromEncodedURIComponent
+from nebula.core.database import database
+from nebula.core.execution import get_executor
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.services.lock import DistributedLock
+from nebula.utils.lzstring import decompressFromEncodedURIComponent
 
 DMM_URL = "https://github.com/debridmediamanager/hashlists/zipball/main/"
 TEMP_DIR = "data/dmm_temp"

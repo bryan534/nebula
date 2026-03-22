@@ -4,32 +4,32 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, BackgroundTasks, Request
 
-from comet.core.config_validation import config_check
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.debrid.exceptions import DebridAuthError
-from comet.debrid.manager import get_debrid_extension
-from comet.metadata.episode_index import EpisodeIndexService
-from comet.metadata.filter import release_filter
-from comet.metadata.manager import MetadataScraper
-from comet.services.anime import anime_mapper
-from comet.services.cache_state import CacheStateManager
-from comet.services.debrid import DebridService
-from comet.services.debrid_account_scraper import (
+from nebula.core.config_validation import config_check
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.debrid.exceptions import DebridAuthError
+from nebula.debrid.manager import get_debrid_extension
+from nebula.metadata.episode_index import EpisodeIndexService
+from nebula.metadata.filter import release_filter
+from nebula.metadata.manager import MetadataScraper
+from nebula.services.anime import anime_mapper
+from nebula.services.cache_state import CacheStateManager
+from nebula.services.debrid import DebridService
+from nebula.services.debrid_account_scraper import (
     ensure_account_snapshot_ready, get_account_torrents_for_media,
     ingest_account_torrents_to_public_cache, schedule_account_snapshot_refresh)
-from comet.services.lock import DistributedLock
-from comet.services.orchestration import TorrentManager
-from comet.services.trackers import trackers
-from comet.utils.cache import (CachedJSONResponse, CachePolicies,
+from nebula.services.lock import DistributedLock
+from nebula.services.orchestration import TorrentManager
+from nebula.services.trackers import trackers
+from nebula.utils.cache import (CachedJSONResponse, CachePolicies,
                                check_etag_match, generate_etag,
                                not_modified_response)
-from comet.utils.formatting import (format_chilllink, format_title,
+from nebula.utils.formatting import (format_chilllink, format_title,
                                     get_formatted_components,
                                     get_formatted_components_plain)
-from comet.utils.http_client import http_client_manager
-from comet.utils.network import get_client_ip
-from comet.utils.parsing import parse_media_id
+from nebula.utils.http_client import http_client_manager
+from nebula.utils.network import get_client_ip
+from nebula.utils.parsing import parse_media_id
 
 streams = APIRouter()
 STREMIO_API_PREFIX = settings.STREMIO_API_PREFIX
@@ -95,7 +95,7 @@ def _build_stream_name(
     status: str = "",
 ):
     if not kodi:
-        return f"[{service}{icon}] Comet {resolution}"
+        return f"[{service}{icon}] Nebula {resolution}"
 
     prefix = f"[{f'{service} {status}'.strip()}] {resolution}"
 
@@ -413,13 +413,13 @@ async def stream(
         error_response = {
             "streams": [
                 {
-                    "name": _stream_notice_name(kodi, "[❌] Comet", "[ERROR] Comet"),
+                    "name": _stream_notice_name(kodi, "[❌] Nebula", "[ERROR] Nebula"),
                     "description": (
                         f"OBSOLETE CONFIGURATION, PLEASE RE-CONFIGURE ON {request.url.scheme}://{request.url.netloc}"
                         if kodi
                         else f"⚠️ OBSOLETE CONFIGURATION, PLEASE RE-CONFIGURE ON {request.url.scheme}://{request.url.netloc} ⚠️"
                     ),
-                    "url": "https://comet.feels.legal",
+                    "url": "https://nebula.feels.legal",
                 }
             ]
         }
@@ -469,10 +469,10 @@ async def stream(
                     "streams": [
                         {
                             "name": _stream_notice_name(
-                                kodi, "[🚫] Comet", "[BLOCKED] Comet"
+                                kodi, "[🚫] Nebula", "[BLOCKED] Nebula"
                             ),
                             "description": "Content not digitally released yet.",
-                            "url": "https://comet.feels.legal",
+                            "url": "https://nebula.feels.legal",
                         }
                     ]
                 },
@@ -489,9 +489,9 @@ async def stream(
             {
                 "streams": [
                     {
-                        "name": _stream_notice_name(kodi, "[⚠️] Comet", "[WARN] Comet"),
+                        "name": _stream_notice_name(kodi, "[⚠️] Nebula", "[WARN] Nebula"),
                         "description": "Unable to get metadata.",
-                        "url": "https://comet.feels.legal",
+                        "url": "https://nebula.feels.legal",
                     }
                 ]
             },
@@ -634,9 +634,9 @@ async def stream(
             {
                 "streams": [
                     {
-                        "name": _stream_notice_name(kodi, "[🔄] Comet", "[INFO] Comet"),
+                        "name": _stream_notice_name(kodi, "[🔄] Nebula", "[INFO] Nebula"),
                         "description": "Scraping in progress, please try again in a few seconds...",
-                        "url": "https://comet.feels.legal",
+                        "url": "https://nebula.feels.legal",
                     }
                 ]
             },
@@ -655,9 +655,9 @@ async def stream(
     if cache_result.should_show_first_search_message:
         cached_results.append(
             {
-                "name": _stream_notice_name(kodi, "[🔄] Comet", "[INFO] Comet"),
+                "name": _stream_notice_name(kodi, "[🔄] Nebula", "[INFO] Nebula"),
                 "description": "First search for this media - More results will be available in a few seconds...",
-                "url": "https://comet.feels.legal",
+                "url": "https://nebula.feels.legal",
             }
         )
 
@@ -823,7 +823,7 @@ async def stream(
                 {
                     "name": (f"[ERROR] {service}" if kodi else f"[❌] {service}"),
                     "description": error.display_message,
-                    "url": "https://comet.feels.legal",
+                    "url": "https://nebula.feels.legal",
                 }
             )
 
@@ -868,9 +868,9 @@ async def stream(
     ):
         cached_results.append(
             {
-                "name": _stream_notice_name(kodi, "[⚠️] Comet", "[WARN] Comet"),
+                "name": _stream_notice_name(kodi, "[⚠️] Nebula", "[WARN] Nebula"),
                 "description": "Debrid Stream Proxy Password incorrect.\nStreams will not be proxied.",
-                "url": "https://comet.feels.legal",
+                "url": "https://nebula.feels.legal",
             }
         )
 
@@ -900,9 +900,9 @@ async def stream(
             cached_results.append(
                 {
                     "name": (
-                        f"[{debrid_extension}] Comet Sync"
+                        f"[{debrid_extension}] Nebula Sync"
                         if kodi
-                        else f"[{debrid_extension}🔄] Comet Sync"
+                        else f"[{debrid_extension}🔄] Nebula Sync"
                     ),
                     "description": (
                         "Sync debrid account library now.\n"
@@ -965,13 +965,13 @@ async def stream(
                 continue
 
             behavior_hints = {
-                "bingeGroup": f"comet|{service}|{info_hash}",
+                "bingeGroup": f"nebula|{service}|{info_hash}",
                 "filename": rtn_data.raw_title,
             }
             if torrent_size is not None:
                 behavior_hints["videoSize"] = torrent_size
             if kodi_meta is not None:
-                behavior_hints["cometKodiMetaV1"] = kodi_meta
+                behavior_hints["nebulaKodiMetaV1"] = kodi_meta
 
             stream_name = _build_stream_name(
                 kodi,
@@ -1018,13 +1018,13 @@ async def stream(
                 continue
 
             behavior_hints = {
-                "bingeGroup": f"comet|torrent|{info_hash}",
+                "bingeGroup": f"nebula|torrent|{info_hash}",
                 "filename": rtn_data.raw_title,
             }
             if torrent_size is not None:
                 behavior_hints["videoSize"] = torrent_size
             if kodi_meta is not None:
-                behavior_hints["cometKodiMetaV1"] = kodi_meta
+                behavior_hints["nebulaKodiMetaV1"] = kodi_meta
 
             stream_name = _build_stream_name(
                 kodi,

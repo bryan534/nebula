@@ -1,6 +1,6 @@
 import aiohttp
 
-from comet.core.logger import logger
+from nebula.core.logger import logger
 
 trackers = []
 
@@ -16,7 +16,7 @@ async def download_best_trackers():
         trackers.clear()
         trackers.extend(line for line in text.split("\n") if line)
         logger.log(
-            "COMET",
+            "NEBULA",
             f"Generic Trackers: downloaded {len(trackers)} trackers",
         )
     except Exception as e:

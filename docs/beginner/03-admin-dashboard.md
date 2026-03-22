@@ -1,6 +1,6 @@
 # Use the Admin Dashboard
 
-The Admin Dashboard is the main operations UI for Comet.
+The Admin Dashboard is the main operations UI for Nebula.
 
 ## Access
 
@@ -34,9 +34,9 @@ Session behavior:
 - View status, run history, queue and SLO info.
 - Start/stop/pause/resume/requeue-dead from the dashboard.
 
-5. **CometNet**
-- Visible for CometNet operations and pool management APIs.
-- Requires CometNet backend to be active.
+5. **NebulaNet**
+- Visible for NebulaNet operations and pool management APIs.
+- Requires NebulaNet backend to be active.
 
 ## Update Check
 

@@ -4,11 +4,11 @@ from typing import Iterable
 
 from fastapi.responses import FileResponse, JSONResponse, Response
 
-from comet.core.logger import logger
-from comet.utils.cache import NO_CACHE_HEADERS
-from comet.utils.status_keys import normalize_status_key
+from nebula.core.logger import logger
+from nebula.utils.cache import NO_CACHE_HEADERS
+from nebula.utils.status_keys import normalize_status_key
 
-STATUS_VIDEO_DIR = Path("comet/assets/status_videos")
+STATUS_VIDEO_DIR = Path("nebula/assets/status_videos")
 DEFAULT_STATUS_KEY = "UNKNOWN"
 
 

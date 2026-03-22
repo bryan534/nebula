@@ -3,17 +3,17 @@ import asyncio
 import orjson
 from RTN import DefaultRanking, ParsedData
 
-from comet.core.execution import get_executor
-from comet.core.logger import logger
-from comet.core.models import CometSettingsModel, database
-from comet.scrapers.manager import scraper_manager
-from comet.scrapers.models import ScrapeRequest
-from comet.services.filtering import filter_worker
-from comet.services.ranking import rank_worker
-from comet.services.torrent_manager import torrent_update_queue
-from comet.utils.media_ids import normalize_cache_media_ids
-from comet.utils.parsing import ensure_multi_language, parsed_matches_target
-from comet.utils.torrent_cache import (build_torrent_cache_where,
+from nebula.core.execution import get_executor
+from nebula.core.logger import logger
+from nebula.core.models import NebulaSettingsModel, database
+from nebula.scrapers.manager import scraper_manager
+from nebula.scrapers.models import ScrapeRequest
+from nebula.services.filtering import filter_worker
+from nebula.services.ranking import rank_worker
+from nebula.services.torrent_manager import torrent_update_queue
+from nebula.utils.media_ids import normalize_cache_media_ids
+from nebula.utils.parsing import ensure_multi_language, parsed_matches_target
+from nebula.utils.torrent_cache import (build_torrent_cache_where,
                                        normalize_search_params)
 
 
@@ -291,7 +291,7 @@ class TorrentManager:
 
     async def rank_torrents(
         self,
-        rtn_settings: CometSettingsModel,
+        rtn_settings: NebulaSettingsModel,
         rtn_ranking: DefaultRanking,
         max_results_per_resolution: int,
         max_size: int,

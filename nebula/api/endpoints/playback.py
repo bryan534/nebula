@@ -5,20 +5,20 @@ import orjson
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import RedirectResponse
 
-from comet.core.config_validation import config_check
-from comet.core.database import (DOWNLOAD_LINK_CACHE_TTL,
+from nebula.core.config_validation import config_check
+from nebula.core.database import (DOWNLOAD_LINK_CACHE_TTL,
                                  build_scope_lookup_params, build_scope_params,
                                  database)
-from comet.core.models import settings
-from comet.debrid.exceptions import DebridLinkGenerationError
-from comet.debrid.manager import (build_account_key_hash, get_debrid,
+from nebula.core.models import settings
+from nebula.debrid.exceptions import DebridLinkGenerationError
+from nebula.debrid.manager import (build_account_key_hash, get_debrid,
                                   get_debrid_credentials)
-from comet.metadata.manager import MetadataScraper
-from comet.services.status_video import build_status_video_response
-from comet.services.streaming.manager import custom_handle_stream_request
-from comet.utils.http_client import http_client_manager
-from comet.utils.network import get_client_ip
-from comet.utils.parsing import parse_optional_int
+from nebula.metadata.manager import MetadataScraper
+from nebula.services.status_video import build_status_video_response
+from nebula.services.streaming.manager import custom_handle_stream_request
+from nebula.utils.http_client import http_client_manager
+from nebula.utils.network import get_client_ip
+from nebula.utils.parsing import parse_optional_int
 
 router = APIRouter()
 

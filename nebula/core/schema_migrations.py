@@ -1,8 +1,8 @@
 import time
 from dataclasses import dataclass
 
-from comet.core.logger import logger
-from comet.core.schema_specs import (ACTIVE_CONNECTIONS_TABLE_SPEC,
+from nebula.core.logger import logger
+from nebula.core.schema_specs import (ACTIVE_CONNECTIONS_TABLE_SPEC,
                                      ANIME_ENTRIES_TABLE_SPEC,
                                      ANIME_IDS_COPY_SQL, ANIME_IDS_TABLE_SPEC,
                                      ANIME_MAPPING_STATE_TABLE_SPEC,

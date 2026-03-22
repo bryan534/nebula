@@ -2,7 +2,7 @@
 *.db
 data/
 lib/
-!kodi/plugin.video.comet/lib/
+!kodi/plugin.video.nebula/lib/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

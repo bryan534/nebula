@@ -7,9 +7,9 @@ import traceback
 
 import uvicorn
 
-from comet.api.app import app
-from comet.core.logger import log_startup_info, logger
-from comet.core.models import settings
+from nebula.api.app import app
+from nebula.core.logger import log_startup_info, logger
+from nebula.core.models import settings
 
 
 class Server(uvicorn.Server):
@@ -18,7 +18,7 @@ class Server(uvicorn.Server):
 
     @contextlib.contextmanager
     def run_in_thread(self):
-        thread = threading.Thread(target=self.run, name="Comet")
+        thread = threading.Thread(target=self.run, name="Nebula")
         thread.start()
         try:
             while not self.started:
@@ -50,12 +50,12 @@ def run_with_uvicorn():
     try:
         server.run()
     except KeyboardInterrupt:
-        logger.log("COMET", "Server stopped by user")
+        logger.log("NEBULA", "Server stopped by user")
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         logger.exception(traceback.format_exc())
     finally:
-        logger.log("COMET", "Server Shutdown")
+        logger.log("NEBULA", "Server Shutdown")
 
 
 def run_with_gunicorn():
@@ -97,7 +97,7 @@ def run_with_gunicorn():
     }
 
     log_startup_info(settings)
-    logger.log("COMET", f"Starting with gunicorn using {workers} workers")
+    logger.log("NEBULA", f"Starting with gunicorn using {workers} workers")
 
     StandaloneApplication(app, options).run()
 

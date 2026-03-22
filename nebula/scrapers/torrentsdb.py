@@ -1,9 +1,9 @@
 import re
 
-from comet.core.logger import log_scraper_error
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
-from comet.utils.formatting import size_to_bytes
+from nebula.core.logger import log_scraper_error
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
+from nebula.utils.formatting import size_to_bytes
 
 METADATA_PATTERN = re.compile(
     r"(?:📅 S\d+E\d+ )?(?:👤 (\d+) )?💾 ([\d.]+ [KMGT]?B)(?: ⚙️ (.+))?", re.IGNORECASE

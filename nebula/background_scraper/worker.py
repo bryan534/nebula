@@ -4,14 +4,14 @@ import time
 import uuid
 from dataclasses import dataclass
 
-from comet.core.database import database
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.metadata.manager import MetadataScraper
-from comet.services.lock import DistributedLock
-from comet.services.orchestration import TorrentManager
-from comet.utils.http_client import http_client_manager
-from comet.utils.year import parse_year_range
+from nebula.core.database import database
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.metadata.manager import MetadataScraper
+from nebula.services.lock import DistributedLock
+from nebula.services.orchestration import TorrentManager
+from nebula.utils.http_client import http_client_manager
+from nebula.utils.year import parse_year_range
 
 from .cinemata_client import CinemataClient
 

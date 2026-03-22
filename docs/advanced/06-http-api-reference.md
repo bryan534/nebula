@@ -50,7 +50,7 @@ Admin API examples:
 - `/admin/api/metrics`
 - `/admin/api/update-check`
 - `/admin/api/background-scraper/*`
-- `/admin/api/cometnet/*`
+- `/admin/api/nebulanet/*`
 
 Most admin APIs require valid `admin_session` cookie, except metrics when `PUBLIC_METRICS_API=True`.
 
@@ -60,12 +60,12 @@ Most admin APIs require valid `admin_session` cookie, except metrics when `PUBLI
 - `POST /kodi/associate_manifest`
 - `GET /kodi/get_manifest/{code}`
 
-## CometNet (Integrated Endpoint Surface)
+## NebulaNet (Integrated Endpoint Surface)
 
-- `WS /cometnet/ws`
-- `GET /cometnet/health`
+- `WS /nebulanet/ws`
+- `GET /nebulanet/health`
 
-CometNet admin operations are exposed through `/admin/api/cometnet/*` via either local integrated backend or relay backend.
+NebulaNet admin operations are exposed through `/admin/api/nebulanet/*` via either local integrated backend or relay backend.
 
 ## Next
 

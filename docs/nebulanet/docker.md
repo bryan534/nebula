@@ -1,119 +1,119 @@
-# CometNet Docker Deployment
+# NebulaNet Docker Deployment
 
-Complete Docker configurations for CometNet.
+Complete Docker configurations for NebulaNet.
 
 ---
 
 ## Integrated Mode (Single Instance)
 
-For simple deployments with a single Comet instance.
+For simple deployments with a single Nebula instance.
 
 ### docker-compose.yml
 
 ```yaml
 services:
-  comet:
-    container_name: comet
-    image: g0ldyy/comet
+  nebula:
+    container_name: nebula
+    image: g0ldyy/nebula
     restart: unless-stopped
     ports:
       - "8000:8000"
-      - "8765:8765"  # CometNet P2P port
+      - "8765:8765"  # NebulaNet P2P port
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
-      COMETNET_ENABLED: "True"
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
+      NEBULANET_ENABLED: "True"
       FASTAPI_WORKERS: "1"
     env_file:
       - .env
     volumes:
-      - comet_data:/app/data
+      - nebula_data:/app/data
     depends_on:
       postgres:
         condition: service_healthy
 
   postgres:
-    container_name: comet-postgres
+    container_name: nebula-postgres
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: comet
-      POSTGRES_PASSWORD: comet
-      POSTGRES_DB: comet
+      POSTGRES_USER: nebula
+      POSTGRES_PASSWORD: nebula
+      POSTGRES_DB: nebula
     volumes:
       - postgres_data:/var/lib/postgresql/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U comet -d comet"]
+      test: ["CMD-SHELL", "pg_isready -U nebula -d nebula"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  comet_data:
+  nebula_data:
   postgres_data:
 ```
 
 ### .env
 
 ```env
-# CometNet Configuration
-COMETNET_BOOTSTRAP_NODES=["wss://bootstrap.example.com:8765"]
-COMETNET_ADVERTISE_URL=wss://comet.yourdomain.com:8765
+# NebulaNet Configuration
+NEBULANET_BOOTSTRAP_NODES=["wss://bootstrap.example.com:8765"]
+NEBULANET_ADVERTISE_URL=wss://nebula.yourdomain.com:8765
 
 # Optional: For home connections
-COMETNET_UPNP_ENABLED=True
+NEBULANET_UPNP_ENABLED=True
 ```
 
 ---
 
 ## Relay Mode (Multi-Worker / Cluster)
 
-For production deployments with multiple Comet workers or replicas.
+For production deployments with multiple Nebula workers or replicas.
 
 ### docker-compose.yml
 
 ```yaml
 services:
-  comet:
-    container_name: comet
-    image: g0ldyy/comet
+  nebula:
+    container_name: nebula
+    image: g0ldyy/nebula
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
-      COMETNET_RELAY_URL: http://cometnet:8766
-      COMETNET_API_KEY: ${COMETNET_API_KEY} # Secure the relay connection
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
+      NEBULANET_RELAY_URL: http://nebulanet:8766
+      NEBULANET_API_KEY: ${NEBULANET_API_KEY} # Secure the relay connection
       FASTAPI_WORKERS: "4"  # Can use multiple workers
     env_file:
       - .env
     volumes:
-      - comet_data:/app/data
+      - nebula_data:/app/data
     depends_on:
       postgres:
         condition: service_healthy
-      cometnet:
+      nebulanet:
         condition: service_started
 
-  cometnet:
-    container_name: cometnet
-    image: g0ldyy/comet
+  nebulanet:
+    container_name: nebulanet
+    image: g0ldyy/nebula
     restart: unless-stopped
-    entrypoint: ["uv", "run", "python", "-m", "comet.cometnet.standalone"]
+    entrypoint: ["uv", "run", "python", "-m", "nebula.nebulanet.standalone"]
     ports:
       - "8765:8765"   # P2P WebSocket
       # - "8766:8766" # HTTP API (optional, only if needed externally)
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
-      COMETNET_LISTEN_PORT: "8765"
-      COMETNET_HTTP_PORT: "8766"
-      COMETNET_API_KEY: ${COMETNET_API_KEY}
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
+      NEBULANET_LISTEN_PORT: "8765"
+      NEBULANET_HTTP_PORT: "8766"
+      NEBULANET_API_KEY: ${NEBULANET_API_KEY}
     env_file:
-      - .env-cometnet
+      - .env-nebulanet
     volumes:
-      - cometnet_data:/app/data
+      - nebulanet_data:/app/data
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,51 +124,51 @@ services:
       retries: 3
 
   postgres:
-    container_name: comet-postgres
+    container_name: nebula-postgres
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: comet
-      POSTGRES_PASSWORD: comet
-      POSTGRES_DB: comet
+      POSTGRES_USER: nebula
+      POSTGRES_PASSWORD: nebula
+      POSTGRES_DB: nebula
     volumes:
       - postgres_data:/var/lib/postgresql/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U comet -d comet"]
+      test: ["CMD-SHELL", "pg_isready -U nebula -d nebula"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  comet_data:
-  cometnet_data:
+  nebula_data:
+  nebulanet_data:
   postgres_data:
 ```
 
-### .env-cometnet
+### .env-nebulanet
 
-Create a separate environment file for the CometNet standalone service:
+Create a separate environment file for the NebulaNet standalone service:
 
 ```env
 # Network Discovery
-COMETNET_BOOTSTRAP_NODES=["wss://bootstrap.example.com:8765"]
-COMETNET_MANUAL_PEERS=[]
+NEBULANET_BOOTSTRAP_NODES=["wss://bootstrap.example.com:8765"]
+NEBULANET_MANUAL_PEERS=[]
 
 # Public URL (required for others to connect)
-COMETNET_ADVERTISE_URL=wss://comet.yourdomain.com:8765
+NEBULANET_ADVERTISE_URL=wss://nebula.yourdomain.com:8765
 
 # Peer Limits
-COMETNET_MAX_PEERS=50
-COMETNET_MIN_PEERS=3
+NEBULANET_MAX_PEERS=50
+NEBULANET_MIN_PEERS=3
 
 # Contribution Mode
-COMETNET_CONTRIBUTION_MODE=full
+NEBULANET_CONTRIBUTION_MODE=full
 
 # Optional: Trust Pools
-# COMETNET_TRUSTED_POOLS=["my-community"]
+# NEBULANET_TRUSTED_POOLS=["my-community"]
 
 # Mandatory: API Key for security (Auto-generated if not set)
-COMETNET_API_KEY=my-secret-key
+NEBULANET_API_KEY=my-secret-key
 ```
 
 ---
@@ -181,39 +181,39 @@ For high-availability deployments.
 
 ```yaml
 services:
-  comet:
-    image: g0ldyy/comet
+  nebula:
+    image: g0ldyy/nebula
     deploy:
       replicas: 3
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
-      COMETNET_RELAY_URL: http://cometnet:8766
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
+      NEBULANET_RELAY_URL: http://nebulanet:8766
       FASTAPI_WORKERS: "2"
     env_file:
       - .env
     volumes:
-      - comet_data:/app/data
+      - nebula_data:/app/data
     depends_on:
       - postgres
-      - cometnet
+      - nebulanet
 
-  cometnet:
-    image: g0ldyy/comet
-    entrypoint: ["uv", "run", "python", "-m", "comet.cometnet.standalone"]
+  nebulanet:
+    image: g0ldyy/nebula
+    entrypoint: ["uv", "run", "python", "-m", "nebula.nebulanet.standalone"]
     ports:
       - "8765:8765"
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
     env_file:
-      - .env-cometnet
+      - .env-nebulanet
     volumes:
-      - cometnet_data:/app/data
+      - nebulanet_data:/app/data
     depends_on:
       - postgres
     deploy:
-      replicas: 1  # Only one CometNet instance needed
+      replicas: 1  # Only one NebulaNet instance needed
 
   load-balancer:
     image: nginx:alpine
@@ -222,20 +222,20 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - comet
+      - nebula
 
   postgres:
     image: postgres:18-alpine
     environment:
-      POSTGRES_USER: comet
-      POSTGRES_PASSWORD: comet
-      POSTGRES_DB: comet
+      POSTGRES_USER: nebula
+      POSTGRES_PASSWORD: nebula
+      POSTGRES_DB: nebula
     volumes:
       - postgres_data:/var/lib/postgresql/
 
 volumes:
-  comet_data:
-  cometnet_data:
+  nebula_data:
+  nebulanet_data:
   postgres_data:
 ```
 
@@ -243,53 +243,53 @@ volumes:
 
 ## Private Network Deployment
 
-For isolated CometNet networks.
+For isolated NebulaNet networks.
 
 ### docker-compose.yml
 
 ```yaml
 services:
-  comet:
-    container_name: comet
-    image: g0ldyy/comet
+  nebula:
+    container_name: nebula
+    image: g0ldyy/nebula
     restart: unless-stopped
     ports:
       - "8000:8000"
       - "8765:8765"
     environment:
       DATABASE_TYPE: postgresql
-      DATABASE_URL: comet:comet@postgres:5432/comet
-      COMETNET_ENABLED: "True"
+      DATABASE_URL: nebula:nebula@postgres:5432/nebula
+      NEBULANET_ENABLED: "True"
       FASTAPI_WORKERS: "1"
-      COMETNET_PRIVATE_NETWORK: "True"
-      COMETNET_NETWORK_ID: my-private-network
-      COMETNET_NETWORK_PASSWORD: ${COMETNET_NETWORK_PASSWORD}
+      NEBULANET_PRIVATE_NETWORK: "True"
+      NEBULANET_NETWORK_ID: my-private-network
+      NEBULANET_NETWORK_PASSWORD: ${NEBULANET_NETWORK_PASSWORD}
     env_file:
       - .env
     volumes:
-      - comet_data:/app/data
+      - nebula_data:/app/data
     depends_on:
       postgres:
         condition: service_healthy
 
   postgres:
-    container_name: comet-postgres
+    container_name: nebula-postgres
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: comet
-      POSTGRES_PASSWORD: comet
-      POSTGRES_DB: comet
+      POSTGRES_USER: nebula
+      POSTGRES_PASSWORD: nebula
+      POSTGRES_DB: nebula
     volumes:
       - postgres_data:/var/lib/postgresql/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U comet -d comet"]
+      test: ["CMD-SHELL", "pg_isready -U nebula -d nebula"]
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
-  comet_data:
+  nebula_data:
   postgres_data:
 ```
 
@@ -297,12 +297,12 @@ volumes:
 
 ```env
 # Private Network Secret (keep this secure!)
-COMETNET_NETWORK_PASSWORD=my-super-secret-password-change-me
+NEBULANET_NETWORK_PASSWORD=my-super-secret-password-change-me
 
 # Add other private network members
-COMETNET_MANUAL_PEERS=["wss://friend1.example.com:8765", "wss://friend2.example.com:8765"]
+NEBULANET_MANUAL_PEERS=["wss://friend1.example.com:8765", "wss://friend2.example.com:8765"]
 
-COMETNET_ADVERTISE_URL=wss://comet.yourdomain.com:8765
+NEBULANET_ADVERTISE_URL=wss://nebula.yourdomain.com:8765
 ```
 
 ---
@@ -314,12 +314,12 @@ COMETNET_ADVERTISE_URL=wss://comet.yourdomain.com:8765
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name comet.yourdomain.com;
+    server_name nebula.yourdomain.com;
 
-    ssl_certificate /etc/letsencrypt/live/comet.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/comet.yourdomain.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/nebula.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nebula.yourdomain.com/privkey.pem;
 
-    # Comet HTTP API
+    # Nebula HTTP API
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
@@ -328,8 +328,8 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # CometNet WebSocket
-    location /cometnet/ws {
+    # NebulaNet WebSocket
+    location /nebulanet/ws {
         proxy_pass http://127.0.0.1:8765;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -344,24 +344,24 @@ server {
 
 When using this configuration, set:
 ```env
-COMETNET_ADVERTISE_URL=wss://comet.yourdomain.com/cometnet/ws
+NEBULANET_ADVERTISE_URL=wss://nebula.yourdomain.com/nebulanet/ws
 ```
 
 ---
 
 ## Health Checks
 
-### Check Comet
+### Check Nebula
 ```bash
 curl http://localhost:8000/health
 ```
 
-### Check CometNet Standalone
+### Check NebulaNet Standalone
 ```bash
 curl http://localhost:8766/health
 ```
 
-### Check CometNet Stats
+### Check NebulaNet Stats
 ```bash
 curl http://localhost:8766/stats
 ```
@@ -377,7 +377,7 @@ curl http://localhost:8766/peers
 
 ### State Persistence
 
-CometNet periodically saves state (stats, peer reputation, pools) to disk every 5 minutes by default (configurable via `COMETNET_STATE_SAVE_INTERVAL`).
+NebulaNet periodically saves state (stats, peer reputation, pools) to disk every 5 minutes by default (configurable via `NEBULANET_STATE_SAVE_INTERVAL`).
 
 This protects against data loss from:
 - Abrupt container kills (OOM, SIGKILL)
@@ -387,7 +387,7 @@ This protects against data loss from:
 **Recommendation:** Ensure your `data` directory is mounted as a persistent volume:
 ```yaml
 volumes:
-  - ./data:/app/data  # or named volume: comet_data:/app/data
+  - ./data:/app/data  # or named volume: nebula_data:/app/data
 ```
 
 ### Graceful Shutdown
@@ -396,13 +396,13 @@ To ensure all state is saved on shutdown, allow sufficient time for graceful shu
 
 ```yaml
 services:
-  comet:
+  nebula:
     stop_grace_period: 30s  # Allow 30s for graceful shutdown
 ```
 
 Or when manually stopping:
 ```bash
-docker stop -t 30 comet
+docker stop -t 30 nebula
 ```
 
 Without this, Docker may send SIGKILL after 10s, preventing final state save.
@@ -415,16 +415,16 @@ Without this, Docker may send SIGKILL after 10s, preventing final state save.
 
 Check logs:
 ```bash
-docker compose logs cometnet
+docker compose logs nebulanet
 ```
 
 ### Port already in use
 
-Change `COMETNET_LISTEN_PORT` to an available port.
+Change `NEBULANET_LISTEN_PORT` to an available port.
 
 ### Cannot connect to relay
 
-Ensure the cometnet service is healthy:
+Ensure the nebulanet service is healthy:
 ```bash
 docker compose ps
 ```
@@ -433,4 +433,4 @@ docker compose ps
 
 1. Verify firewall allows port 8765
 2. Check Nginx WebSocket configuration
-3. Verify `COMETNET_ADVERTISE_URL` is accessible from outside
+3. Verify `NEBULANET_ADVERTISE_URL` is accessible from outside

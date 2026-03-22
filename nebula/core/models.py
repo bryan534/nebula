@@ -113,9 +113,9 @@ class AppSettings(BaseSettings):
     MAGNET_RESOLVE_TIMEOUT: Optional[int] = 60
     CATALOG_TIMEOUT: Optional[int] = 30
     DOWNLOAD_TORRENT_FILES: Optional[bool] = False
-    SCRAPE_NEBULA: Union[bool, str] = False
-    NEBULA_URL: Union[str, List[str]] = "https://nebula.feels.legal"
-    NEBULA_CLEAN_TRACKER: Optional[bool] = False
+    SCRAPE_COMET: Union[bool, str] = False
+    COMET_URL: Union[str, List[str]] = "https://comet.elfhosted.com"
+    COMET_CLEAN_TRACKER: Optional[bool] = False
     SCRAPE_NYAA: Union[bool, str] = False
     NYAA_ANIME_ONLY: Optional[bool] = True
     NYAA_MAX_CONCURRENT_PAGES: Optional[int] = 5
@@ -393,7 +393,7 @@ class AppSettings(BaseSettings):
         "STREMTHRU_URL",
         "STREMTHRU_SCRAPE_URL",
         "BITMAGNET_URL",
-        "NEBULA_URL",
+        "COMET_URL",
         "ZILEAN_URL",
         "TORRENTIO_URL",
         "MEDIAFUSION_URL",

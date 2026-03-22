@@ -2,7 +2,7 @@ import base64
 
 import orjson
 
-from comet.core.models import settings
+from nebula.core.models import settings
 
 
 class DebridioConfig:

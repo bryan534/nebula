@@ -1,8 +1,8 @@
 import base64
 import json
 
-from comet.core.models import settings
-from comet.utils.parsing import associate_urls_credentials
+from nebula.core.models import settings
+from nebula.utils.parsing import associate_urls_credentials
 
 
 class MediaFusionConfig:

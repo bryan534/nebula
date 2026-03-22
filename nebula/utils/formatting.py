@@ -2,8 +2,8 @@ import base64
 
 from RTN import ParsedData
 
-from comet.core.logger import logger
-from comet.core.models import settings
+from nebula.core.logger import logger
+from nebula.core.models import settings
 
 
 def normalize_info_hash(info_hash: str) -> str:
@@ -223,7 +223,7 @@ _STYLE_EMOJI = {
     "seeders": "👤 {}",
     "size": "💾 {}",
     "tracker": "🔎 {}",
-    "tracker_clean": "🔎 Comet|{}",
+    "tracker_clean": "🔎 Nebula|{}",
     "languages": None,
 }
 
@@ -236,7 +236,7 @@ _STYLE_PLAIN = {
     "seeders": "Seeders: {}",
     "size": "Size: {}",
     "tracker": "Source: {}",
-    "tracker_clean": "Source: Comet|{}",
+    "tracker_clean": "Source: Nebula|{}",
     "languages": "Languages: {}",
 }
 
@@ -283,7 +283,7 @@ def _get_formatted_components(
         components["size"] = style["size"].format(format_bytes(size))
 
     if (has_all or "tracker" in result_format) and tracker:
-        if comet_clean_tracker and tracker[:6] == "Comet|":
+        if comet_clean_tracker and tracker[:5] == "Comet|":
             components["tracker"] = style["tracker_clean"].format(
                 tracker.rsplit("|", 1)[-1]
             )

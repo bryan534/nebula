@@ -5,13 +5,13 @@ import os
 import pkgutil
 from typing import Dict
 
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.models import ScrapeRequest
-from comet.services.anime import anime_mapper
-from comet.utils.network_manager import network_manager
-from comet.utils.parsing import (associate_urls_credentials,
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.models import ScrapeRequest
+from nebula.services.anime import anime_mapper
+from nebula.utils.network_manager import network_manager
+from nebula.utils.parsing import (associate_urls_credentials,
                                  parse_url_scrape_mode,
                                  url_mode_matches_context)
 
@@ -32,7 +32,7 @@ class ScraperManager:
         """
         Dynamically discover and load scraper classes from the scrapers directory.
         """
-        package = "comet.scrapers"
+        package = "nebula.scrapers"
         path = os.path.dirname(__file__)
 
         for _, name, _ in pkgutil.iter_modules([path]):

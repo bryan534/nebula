@@ -3,7 +3,7 @@ from functools import lru_cache
 
 import orjson
 
-from comet.core.models import (ConfigModel, default_config,
+from nebula.core.models import (ConfigModel, default_config,
                                rtn_ranking_default, rtn_settings_default,
                                settings)
 

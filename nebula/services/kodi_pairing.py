@@ -1,7 +1,7 @@
 import secrets
 import time
 
-from comet.core.database import database, fetch_flag
+from nebula.core.database import database, fetch_flag
 
 KODI_SETUP_CODE_TTL_SECONDS = 300
 KODI_SETUP_CODE_BYTES = 4

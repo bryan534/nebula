@@ -5,9 +5,9 @@ import time
 
 from loguru import logger
 
-from comet.core.log_levels import (CUSTOM_LOG_LEVELS, STANDARD_LOG_LEVELS,
+from nebula.core.log_levels import (CUSTOM_LOG_LEVELS, STANDARD_LOG_LEVELS,
                                    get_level_info)
-from comet.utils.parsing import associate_urls_credentials
+from nebula.utils.parsing import associate_urls_credentials
 
 logging.getLogger("demagnetize").setLevel(
     logging.CRITICAL
@@ -198,8 +198,8 @@ def log_scraper_error(
 
 
 def log_startup_info(settings):
-    from comet.core.database import IS_SQLITE
-    from comet.core.execution import max_workers
+    from nebula.core.database import IS_SQLITE
+    from nebula.core.execution import max_workers
 
     def get_urls_with_passwords(urls, passwords):
         url_credentials_pairs = associate_urls_credentials(urls, passwords)
@@ -214,17 +214,17 @@ def log_startup_info(settings):
         return result
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Server started on http://{settings.FASTAPI_HOST}:{settings.FASTAPI_PORT} - {settings.FASTAPI_WORKERS} workers",
     )
-    logger.log("COMET", f"Gunicorn Preload App: {settings.GUNICORN_PRELOAD_APP}")
+    logger.log("NEBULA", f"Gunicorn Preload App: {settings.GUNICORN_PRELOAD_APP}")
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"ProcessPoolExecutor: {max_workers} workers",
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"HTTP Client Pool: limit={settings.HTTP_CLIENT_LIMIT} "
         f"per_host={settings.HTTP_CLIENT_LIMIT_PER_HOST} "
         f"timeout={settings.HTTP_CLIENT_TIMEOUT_TOTAL}s "
@@ -233,7 +233,7 @@ def log_startup_info(settings):
     )
 
     if settings.PUBLIC_BASE_URL:
-        logger.log("COMET", f"Public Base URL: {settings.PUBLIC_BASE_URL}")
+        logger.log("NEBULA", f"Public Base URL: {settings.PUBLIC_BASE_URL}")
 
     def _secret_source_label(source_raw: str, file_env: str):
         if source_raw == "env":
@@ -254,7 +254,7 @@ def log_startup_info(settings):
     admin_session_ttl = max(60, settings.ADMIN_DASHBOARD_SESSION_TTL)
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Admin Dashboard Password: {admin_password} - http://{settings.FASTAPI_HOST}:{settings.FASTAPI_PORT}/admin - Session TTL: {admin_session_ttl}s - Public Metrics API: {settings.PUBLIC_METRICS_API}",
     )
 
@@ -269,12 +269,12 @@ def log_startup_info(settings):
         configure_password = "Disabled"
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Configure Page Password: {configure_password} - Session TTL: {configure_session_ttl}s",
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Public API Token File: {settings.PUBLIC_API_TOKEN_FILE}",
     )
 
@@ -292,7 +292,7 @@ def log_startup_info(settings):
         )
 
         logger.log(
-            "COMET",
+            "NEBULA",
             f"Protected Stremio API Prefix enabled: /s/{token_preview} ({token_source})",
         )
 
@@ -310,7 +310,7 @@ def log_startup_info(settings):
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Database ({settings.DATABASE_TYPE}): {settings.DATABASE_PATH if IS_SQLITE else censor_url(settings.DATABASE_URL)} - Batch Size: {settings.DATABASE_BATCH_SIZE} - TTL: metadata={settings.METADATA_CACHE_TTL}s, torrents={settings.TORRENT_CACHE_TTL}s, live_torrents={settings.LIVE_TORRENT_CACHE_TTL}s, debrid={settings.DEBRID_CACHE_TTL}s, metrics={settings.METRICS_CACHE_TTL}s - Debrid Ratio: {settings.DEBRID_CACHE_CHECK_RATIO} - Startup Cleanup Interval: {settings.DATABASE_STARTUP_CLEANUP_INTERVAL}s - Memory Trim Interval: {memory_trim_value}{force_ipv4_info}{replicas}",
     )
 
@@ -331,7 +331,7 @@ def log_startup_info(settings):
             )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         "Filter Parse Cache: "
         f"size={settings.FILTER_PARSE_CACHE_SIZE} "
         f"shards={settings.FILTER_PARSE_CACHE_SHARDS} "
@@ -344,16 +344,16 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Anime Mapping: {settings.ANIME_MAPPING_ENABLED}{anime_mapping_refresh}",
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Global Proxy: {censor_url(settings.GLOBAL_PROXY_URL)} - Ethos: {settings.PROXY_ETHOS}",
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Rate Limit Manager: Max Retries={settings.RATELIMIT_MAX_RETRIES} - Base Delay={settings.RATELIMIT_RETRY_BASE_DELAY}s",
     )
 
@@ -366,7 +366,7 @@ def log_startup_info(settings):
         )
         jackett_info = f" - {settings.JACKETT_URL} - Indexers: {indexers}"
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Jackett Scraper: {settings.format_scraper_mode(settings.SCRAPE_JACKETT)}{jackett_info}",
     )
 
@@ -379,25 +379,25 @@ def log_startup_info(settings):
         )
         prowlarr_info = f" - {settings.PROWLARR_URL} - Indexers: {indexers}"
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Prowlarr Scraper: {settings.format_scraper_mode(settings.SCRAPE_PROWLARR)}{prowlarr_info}",
     )
 
-    logger.log("COMET", f"Indexer Manager Timeout: {settings.INDEXER_MANAGER_TIMEOUT}s")
+    logger.log("NEBULA", f"Indexer Manager Timeout: {settings.INDEXER_MANAGER_TIMEOUT}s")
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Indexer Manager Wait Timeout: {settings.INDEXER_MANAGER_WAIT_TIMEOUT}s",
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Indexer Manager Update Interval: {settings.INDEXER_MANAGER_UPDATE_INTERVAL}s",
     )
-    logger.log("COMET", f"Get Torrent Timeout: {settings.GET_TORRENT_TIMEOUT}s")
-    logger.log("COMET", f"Magnet Resolve Timeout: {settings.MAGNET_RESOLVE_TIMEOUT}s")
-    logger.log("COMET", f"Catalog Timeout: {settings.CATALOG_TIMEOUT}s")
-    logger.log("COMET", f"Scrape Lock TTL: {settings.SCRAPE_LOCK_TTL}s")
-    logger.log("COMET", f"Scrape Wait Timeout: {settings.SCRAPE_WAIT_TIMEOUT}s")
-    logger.log("COMET", f"Download Torrent Files: {settings.DOWNLOAD_TORRENT_FILES}")
+    logger.log("NEBULA", f"Get Torrent Timeout: {settings.GET_TORRENT_TIMEOUT}s")
+    logger.log("NEBULA", f"Magnet Resolve Timeout: {settings.MAGNET_RESOLVE_TIMEOUT}s")
+    logger.log("NEBULA", f"Catalog Timeout: {settings.CATALOG_TIMEOUT}s")
+    logger.log("NEBULA", f"Scrape Lock TTL: {settings.SCRAPE_LOCK_TTL}s")
+    logger.log("NEBULA", f"Scrape Wait Timeout: {settings.SCRAPE_WAIT_TIMEOUT}s")
+    logger.log("NEBULA", f"Download Torrent Files: {settings.DOWNLOAD_TORRENT_FILES}")
 
     comet_url = (
         f" - {settings.COMET_URL}"
@@ -405,7 +405,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Comet Scraper: {settings.format_scraper_mode(settings.SCRAPE_COMET)}{comet_url} - Clean Tracker: {settings.COMET_CLEAN_TRACKER}",
     )
 
@@ -415,7 +415,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Nyaa Scraper: {settings.format_scraper_mode(settings.SCRAPE_NYAA)}{nyaa_anime_only}",
     )
 
@@ -425,7 +425,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"AnimeTosho Scraper: {settings.format_scraper_mode(settings.SCRAPE_ANIMETOSHO)}{animetosho_anime_only}",
     )
 
@@ -435,7 +435,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"SeaDex Scraper: {settings.format_scraper_mode(settings.SCRAPE_SEADEX)}{seadex_anime_only}",
     )
 
@@ -445,7 +445,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"NekoBT Scraper: {settings.format_scraper_mode(settings.SCRAPE_NEKOBT)}{nekobt_anime_only}",
     )
 
@@ -455,7 +455,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Zilean Scraper: {settings.format_scraper_mode(settings.SCRAPE_ZILEAN)}{zilean_url}",
     )
 
@@ -465,7 +465,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"StremThru Scraper: {settings.format_scraper_mode(settings.SCRAPE_STREMTHRU)}{stremthru_scrape_url}",
     )
 
@@ -475,7 +475,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Bitmagnet Scraper: {settings.format_scraper_mode(settings.SCRAPE_BITMAGNET)}{bitmagnet_info}",
     )
 
@@ -485,7 +485,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Torrentio Scraper: {settings.format_scraper_mode(settings.SCRAPE_TORRENTIO)}{torrentio_url}",
     )
 
@@ -495,7 +495,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"MediaFusion Scraper: {settings.format_scraper_mode(settings.SCRAPE_MEDIAFUSION)}{mediafusion_display} - Live Search: {settings.MEDIAFUSION_LIVE_SEARCH}",
     )
 
@@ -505,7 +505,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"AIOStreams Scraper: {settings.format_scraper_mode(settings.SCRAPE_AIOSTREAMS)}{aiostreams_display}",
     )
 
@@ -515,7 +515,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Jackettio Scraper: {settings.format_scraper_mode(settings.SCRAPE_JACKETTIO)}{jackettio_url}",
     )
 
@@ -525,7 +525,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Debridio Scraper: {settings.format_scraper_mode(settings.SCRAPE_DEBRIDIO)}{debridio_info}",
     )
 
@@ -535,22 +535,22 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"TorBox Scraper: {settings.format_scraper_mode(settings.SCRAPE_TORBOX)}{torbox_api_key}",
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"TorrentsDB Scraper: {settings.format_scraper_mode(settings.SCRAPE_TORRENTSDB)}",
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Peerflix Scraper: {settings.format_scraper_mode(settings.SCRAPE_PEERFLIX)}",
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"DMM Scraper: {settings.format_scraper_mode(settings.SCRAPE_DMM)}",
     )
     dmm_ingest_info = (
@@ -559,7 +559,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"DMM Ingester: {settings.DMM_INGEST_ENABLED}{dmm_ingest_info}",
     )
 
@@ -573,13 +573,13 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Debrid Stream Proxy: {settings.PROXY_DEBRID_STREAM}{debrid_stream_proxy_display}",
     )
 
-    logger.log("COMET", f"StremThru URL: {settings.STREMTHRU_URL}")
+    logger.log("NEBULA", f"StremThru URL: {settings.STREMTHRU_URL}")
     logger.log(
-        "COMET",
+        "NEBULA",
         "Debrid Account Scrape: "
         f"refresh={settings.DEBRID_ACCOUNT_SCRAPE_REFRESH_INTERVAL}s "
         f"ttl={settings.DEBRID_ACCOUNT_SCRAPE_CACHE_TTL}s "
@@ -594,21 +594,21 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Disable Torrent Streams: {settings.DISABLE_TORRENT_STREAMS}{disabled_streams_info}",
     )
 
-    logger.log("COMET", f"Remove Adult Content: {settings.REMOVE_ADULT_CONTENT}")
+    logger.log("NEBULA", f"Remove Adult Content: {settings.REMOVE_ADULT_CONTENT}")
     logger.log(
-        "COMET", f"Smart Language Detection: {settings.SMART_LANGUAGE_DETECTION}"
+        "NEBULA", f"Smart Language Detection: {settings.SMART_LANGUAGE_DETECTION}"
     )
-    logger.log("COMET", f"RTN Filter Debug: {settings.RTN_FILTER_DEBUG}")
-    logger.log("COMET", f"Digital Release Filter: {settings.DIGITAL_RELEASE_FILTER}")
+    logger.log("NEBULA", f"RTN Filter Debug: {settings.RTN_FILTER_DEBUG}")
+    logger.log("NEBULA", f"Digital Release Filter: {settings.DIGITAL_RELEASE_FILTER}")
     logger.log(
-        "COMET",
+        "NEBULA",
         f"TMDB Read Access Token: {censor(settings.TMDB_READ_ACCESS_TOKEN) if settings.TMDB_READ_ACCESS_TOKEN else 'Shared'}",
     )
-    logger.log("COMET", f"Custom Header HTML: {bool(settings.CUSTOM_HEADER_HTML)}")
+    logger.log("NEBULA", f"Custom Header HTML: {bool(settings.CUSTOM_HEADER_HTML)}")
 
     http_cache_info = (
         f" - Streams TTL: {settings.HTTP_CACHE_STREAMS_TTL}s - Manifest TTL: {settings.HTTP_CACHE_MANIFEST_TTL}s - Configure TTL: {settings.HTTP_CACHE_CONFIGURE_TTL}s - SWR: {settings.HTTP_CACHE_STALE_WHILE_REVALIDATE}s"
@@ -616,7 +616,7 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"HTTP Cache: {settings.HTTP_CACHE_ENABLED}{http_cache_info}",
     )
 
@@ -626,27 +626,27 @@ def log_startup_info(settings):
         else ""
     )
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Background Scraper: {settings.BACKGROUND_SCRAPER_ENABLED}{background_scraper_display}",
     )
 
     logger.log(
-        "COMET",
+        "NEBULA",
         f"Generic Trackers: {settings.DOWNLOAD_GENERIC_TRACKERS}",
     )
 
-    if settings.COMETNET_RELAY_URL:
+    if settings.NEBULANET_RELAY_URL:
         logger.log(
-            "COMET",
-            f"CometNet P2P: Relay Mode - {settings.COMETNET_RELAY_URL}",
+            "NEBULA",
+            f"NebulaNet P2P: Relay Mode - {settings.NEBULANET_RELAY_URL}",
         )
-    elif settings.COMETNET_ENABLED:
+    elif settings.NEBULANET_ENABLED:
         logger.log(
-            "COMET",
-            "CometNet P2P: Integrated Mode",
+            "NEBULA",
+            "NebulaNet P2P: Integrated Mode",
         )
     else:
         logger.log(
-            "COMET",
-            "CometNet P2P: False",
+            "NEBULA",
+            "NebulaNet P2P: False",
         )

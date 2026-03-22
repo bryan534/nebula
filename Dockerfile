@@ -1,7 +1,7 @@
 FROM ghcr.io/astral-sh/uv:python3.13-alpine
-LABEL name="Comet" \
+LABEL name="Nebula" \
       description="Stremio's fastest torrent/debrid search add-on." \
-      url="https://github.com/g0ldyy/comet"
+      url="https://github.com/g0ldyy/nebula"
 
 RUN apk add --no-cache gcc python3-dev musl-dev linux-headers git make tzdata mimalloc2
 
@@ -19,12 +19,12 @@ RUN --mount=type=cache,target=/root/.cache/uv,id=uv-${TARGETPLATFORM},sharing=lo
 COPY . .
 
 ARG DATABASE_PATH
-ARG COMET_COMMIT_HASH
-ARG COMET_BUILD_DATE
-ARG COMET_BRANCH
+ARG NEBULA_COMMIT_HASH
+ARG NEBULA_BUILD_DATE
+ARG NEBULA_BRANCH
 
-ENV COMET_COMMIT_HASH=${COMET_COMMIT_HASH} \
-    COMET_BUILD_DATE=${COMET_BUILD_DATE} \
-    COMET_BRANCH=${COMET_BRANCH}
+ENV NEBULA_COMMIT_HASH=${NEBULA_COMMIT_HASH} \
+    NEBULA_BUILD_DATE=${NEBULA_BUILD_DATE} \
+    NEBULA_BRANCH=${NEBULA_BRANCH}
 
-ENTRYPOINT ["uv", "run", "python", "-m", "comet.main"]
+ENTRYPOINT ["uv", "run", "python", "-m", "nebula.main"]

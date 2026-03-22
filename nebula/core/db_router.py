@@ -7,7 +7,7 @@ from typing import List, Optional, Sequence
 from databases import Database
 from sqlalchemy.engine.url import make_url
 
-from comet.core.logger import logger
+from nebula.core.logger import logger
 
 
 class ReplicaAwareDatabase:
@@ -25,10 +25,10 @@ class ReplicaAwareDatabase:
         self._active_replicas: List[Database] = []
         self._replica_index = 0
         self._transaction_depth = contextvars.ContextVar(
-            "comet_db_replica_tx_depth", default=0
+            "nebula_db_replica_tx_depth", default=0
         )
         self._force_primary_context = contextvars.ContextVar(
-            "comet_db_replica_force_primary", default=False
+            "nebula_db_replica_force_primary", default=False
         )
 
     @property

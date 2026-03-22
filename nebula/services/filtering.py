@@ -4,10 +4,10 @@ from threading import Event, Lock
 from pydantic import ValidationError
 from RTN import normalize_title, parse, title_match
 
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.utils.languages import COUNTRY_TO_LANGUAGE
-from comet.utils.parsing import ensure_multi_language
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.utils.languages import COUNTRY_TO_LANGUAGE
+from nebula.utils.parsing import ensure_multi_language
 
 if settings.RTN_FILTER_DEBUG:
 

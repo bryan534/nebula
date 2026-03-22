@@ -1,5 +1,5 @@
 """
-CometNet Public Key Store
+NebulaNet Public Key Store
 
 Manages storage and retrieval of peer public keys for signature verification.
 """
@@ -11,8 +11,8 @@ from typing import Dict, Optional
 
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 
-from comet.cometnet.crypto import NodeIdentity
-from comet.core.logger import logger
+from nebula.nebulanet.crypto import NodeIdentity
+from nebula.core.logger import logger
 
 
 @dataclass
@@ -178,4 +178,4 @@ class PublicKeyStore:
                 verified=key_info.get("verified", False),
             )
 
-        logger.log("COMETNET", f"Loaded {len(self._keys)} public keys from storage")
+        logger.log("NEBULANET", f"Loaded {len(self._keys)} public keys from storage")

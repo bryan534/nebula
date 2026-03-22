@@ -1,5 +1,5 @@
 """
-CometNet Utilities Module
+NebulaNet Utilities Module
 
 Common utility functions for P2P networking, data normalization,
 and asynchronous execution.
@@ -20,7 +20,7 @@ import aiohttp
 import websockets
 from websockets.exceptions import InvalidHandshake, InvalidStatusCode
 
-from comet.core.models import settings
+from nebula.core.models import settings
 
 T = TypeVar("T")
 
@@ -33,7 +33,7 @@ def _get_crypto_executor() -> ThreadPoolExecutor:
     if _crypto_executor is None:
         pool_size = max(4, settings.EXECUTOR_MAX_WORKERS)
         _crypto_executor = ThreadPoolExecutor(
-            max_workers=pool_size, thread_name_prefix="cometnet-crypto-"
+            max_workers=pool_size, thread_name_prefix="nebulanet-crypto-"
         )
     return _crypto_executor
 

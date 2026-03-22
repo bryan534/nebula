@@ -4,7 +4,7 @@ from typing import Any, Optional
 import orjson
 from fastapi import Request, Response
 
-from comet.core.models import settings
+from nebula.core.models import settings
 
 NO_CACHE_HEADERS = {
     "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",

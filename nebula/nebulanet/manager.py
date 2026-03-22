@@ -1,7 +1,7 @@
 """
-CometNet Service Manager
+NebulaNet Service Manager
 
-Main entry point for CometNet functionality.
+Main entry point for NebulaNet functionality.
 Orchestrates all components: Identity, Transport, Discovery, Gossip, Reputation, Pools, and Contribution Modes.
 """
 
@@ -18,40 +18,40 @@ from urllib.parse import urlparse
 
 import aiofiles
 
-from comet.cometnet.crypto import NodeIdentity
-from comet.cometnet.discovery import DiscoveryService, is_valid_peer_address
-from comet.cometnet.gossip import GossipEngine
-from comet.cometnet.interface import CometNetBackend
-from comet.cometnet.keystore import PublicKeyStore
-from comet.cometnet.nat import UPnPManager
-from comet.cometnet.pools import (JoinMode, MemberRole, PoolManifest,
+from nebula.nebulanet.crypto import NodeIdentity
+from nebula.nebulanet.discovery import DiscoveryService, is_valid_peer_address
+from nebula.nebulanet.gossip import GossipEngine
+from nebula.nebulanet.interface import NebulaNetBackend
+from nebula.nebulanet.keystore import PublicKeyStore
+from nebula.nebulanet.nat import UPnPManager
+from nebula.nebulanet.pools import (JoinMode, MemberRole, PoolManifest,
                                   PoolMember, PoolStore)
-from comet.cometnet.protocol import (AnyMessage, MessageType, PeerRequest,
+from nebula.nebulanet.protocol import (AnyMessage, MessageType, PeerRequest,
                                      PeerResponse, PoolDeleteMessage,
                                      PoolJoinRequest, PoolManifestMessage,
                                      PoolMemberUpdate, TorrentAnnounce,
                                      TorrentMetadata)
-from comet.cometnet.reputation import ReputationStore
-from comet.cometnet.transport import ConnectionManager
-from comet.cometnet.utils import (check_advertise_url_reachability,
+from nebula.nebulanet.reputation import ReputationStore
+from nebula.nebulanet.transport import ConnectionManager
+from nebula.nebulanet.utils import (check_advertise_url_reachability,
                                   check_system_clock_sync, is_internal_domain,
                                   is_private_or_internal_ip, run_in_executor,
                                   shutdown_crypto_executor)
-from comet.cometnet.validation import validate_message_security
-from comet.core.logger import logger
-from comet.core.models import settings
-from comet.utils.network import get_client_ip_any
+from nebula.nebulanet.validation import validate_message_security
+from nebula.core.logger import logger
+from nebula.core.models import settings
+from nebula.utils.network import get_client_ip_any
 
 
-class CometNetService(CometNetBackend):
+class NebulaNetService(NebulaNetBackend):
     """
-    Main CometNet service that manages the P2P network.
+    Main NebulaNet service that manages the P2P network.
 
-    This is the primary interface for the rest of Comet to interact with
-    the CometNet P2P layer.
+    This is the primary interface for the rest of Nebula to interact with
+    the NebulaNet P2P layer.
     """
 
-    STATE_FILE = "cometnet_state.json"
+    STATE_FILE = "nebulanet_state.json"
 
     def __init__(
         self,
@@ -68,9 +68,9 @@ class CometNetService(CometNetBackend):
         self.listen_port = listen_port
         self.bootstrap_nodes = bootstrap_nodes or []
         self.manual_peers = manual_peers or []
-        self.max_peers = max_peers or settings.COMETNET_MAX_PEERS
-        self.min_peers = min_peers or settings.COMETNET_MIN_PEERS
-        self.keys_dir = Path(keys_dir) if keys_dir else Path("data/cometnet")
+        self.max_peers = max_peers or settings.NEBULANET_MAX_PEERS
+        self.min_peers = min_peers or settings.NEBULANET_MIN_PEERS
+        self.keys_dir = Path(keys_dir) if keys_dir else Path("data/nebulanet")
         self.advertise_url = advertise_url
 
         # Core components (initialized in start())
@@ -118,9 +118,9 @@ class CometNetService(CometNetBackend):
         self._check_torrents_exist_callback = callback
 
     async def start(self) -> None:
-        """Start the CometNet service."""
+        """Start the NebulaNet service."""
         if not self.enabled:
-            logger.log("COMETNET", "CometNet is disabled")
+            logger.log("NEBULANET", "NebulaNet is disabled")
             return
 
         if self._running:
@@ -129,103 +129,103 @@ class CometNetService(CometNetBackend):
         # Initialize components
         await self._init_components()
 
-        logger.log("COMETNET", "=" * 60)
+        logger.log("NEBULANET", "=" * 60)
         logger.log(
-            "COMETNET", f"Starting CometNet P2P Node - {self.identity.node_id[:8]}"
+            "NEBULANET", f"Starting NebulaNet P2P Node - {self.identity.node_id[:8]}"
         )
-        logger.log("COMETNET", "=" * 60)
+        logger.log("NEBULANET", "=" * 60)
 
-        key_encrypted = "Yes" if settings.COMETNET_KEY_PASSWORD else "No"
+        key_encrypted = "Yes" if settings.NEBULANET_KEY_PASSWORD else "No"
         private_mode = (
-            f" - Private Network: {settings.COMETNET_NETWORK_ID}"
-            if settings.COMETNET_PRIVATE_NETWORK
+            f" - Private Network: {settings.NEBULANET_NETWORK_ID}"
+            if settings.NEBULANET_PRIVATE_NETWORK
             else " - Private Network: False"
         )
 
-        if settings.COMETNET_TRUSTED_POOLS:
-            trusted_pools = f" - Trusted Pools={len(settings.COMETNET_TRUSTED_POOLS)}"
+        if settings.NEBULANET_TRUSTED_POOLS:
+            trusted_pools = f" - Trusted Pools={len(settings.NEBULANET_TRUSTED_POOLS)}"
         else:
             trusted_pools = " - Trusted Pools=All (Open Mode)"
 
         ingest_pools = (
-            f" - Ingest Pools={len(settings.COMETNET_INGEST_POOLS)}"
-            if settings.COMETNET_INGEST_POOLS
+            f" - Ingest Pools={len(settings.NEBULANET_INGEST_POOLS)}"
+            if settings.NEBULANET_INGEST_POOLS
             else ""
         )
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Configuration: Port={self.listen_port}"
             f" - Max Peers={self.max_peers}"
             f" - Min Peers={self.min_peers}"
             f" - Keys: {self.keys_dir}"
             f" - Key Encrypted: {key_encrypted}"
-            f" - Allow Private PEX: {settings.COMETNET_ALLOW_PRIVATE_PEX}"
-            f" - Skip Reachability Check: {settings.COMETNET_SKIP_REACHABILITY_CHECK}"
-            f" - Skip Time Check: {settings.COMETNET_SKIP_TIME_CHECK} (Tolerance: {settings.COMETNET_TIME_CHECK_TOLERANCE}s)"
-            f" - State Save Interval: {settings.COMETNET_STATE_SAVE_INTERVAL}s"
+            f" - Allow Private PEX: {settings.NEBULANET_ALLOW_PRIVATE_PEX}"
+            f" - Skip Reachability Check: {settings.NEBULANET_SKIP_REACHABILITY_CHECK}"
+            f" - Skip Time Check: {settings.NEBULANET_SKIP_TIME_CHECK} (Tolerance: {settings.NEBULANET_TIME_CHECK_TOLERANCE}s)"
+            f" - State Save Interval: {settings.NEBULANET_STATE_SAVE_INTERVAL}s"
             f"{private_mode}",
         )
         logger.log(
-            "COMETNET",
-            f"Reachability Check Config: Retries={settings.COMETNET_REACHABILITY_RETRIES}"
-            f" - Retry Delay={settings.COMETNET_REACHABILITY_RETRY_DELAY}s"
-            f" - Timeout={settings.COMETNET_REACHABILITY_TIMEOUT}s",
+            "NEBULANET",
+            f"Reachability Check Config: Retries={settings.NEBULANET_REACHABILITY_RETRIES}"
+            f" - Retry Delay={settings.NEBULANET_REACHABILITY_RETRY_DELAY}s"
+            f" - Timeout={settings.NEBULANET_REACHABILITY_TIMEOUT}s",
         )
         logger.log(
-            "COMETNET",
-            f"Pools Config: Dir={settings.COMETNET_POOLS_DIR}"
+            "NEBULANET",
+            f"Pools Config: Dir={settings.NEBULANET_POOLS_DIR}"
             f"{trusted_pools}{ingest_pools}",
         )
 
         if self.advertise_url:
-            logger.log("COMETNET", f"Advertise URL: {self.advertise_url}")
+            logger.log("NEBULANET", f"Advertise URL: {self.advertise_url}")
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Peers: Bootstrap={len(self.bootstrap_nodes)}"
             f" - Manual={len(self.manual_peers)}"
-            f" - UPnP: {settings.COMETNET_UPNP_ENABLED} (Lease: {settings.COMETNET_UPNP_LEASE_DURATION}s)",
+            f" - UPnP: {settings.NEBULANET_UPNP_ENABLED} (Lease: {settings.NEBULANET_UPNP_LEASE_DURATION}s)",
         )
 
         logger.log(
-            "COMETNET",
-            f"Gossip: Fanout={settings.COMETNET_GOSSIP_FANOUT}"
-            f" - Interval={settings.COMETNET_GOSSIP_INTERVAL}s"
-            f" - TTL={settings.COMETNET_GOSSIP_MESSAGE_TTL}"
-            f" - Max Torrents/Msg={settings.COMETNET_GOSSIP_MAX_TORRENTS_PER_MESSAGE}"
-            f" - Clock Drift={settings.COMETNET_GOSSIP_VALIDATION_FUTURE_TOLERANCE}s/{settings.COMETNET_GOSSIP_VALIDATION_PAST_TOLERANCE}s"
-            f" - Max Torrent Age={settings.COMETNET_GOSSIP_TORRENT_MAX_AGE}s",
+            "NEBULANET",
+            f"Gossip: Fanout={settings.NEBULANET_GOSSIP_FANOUT}"
+            f" - Interval={settings.NEBULANET_GOSSIP_INTERVAL}s"
+            f" - TTL={settings.NEBULANET_GOSSIP_MESSAGE_TTL}"
+            f" - Max Torrents/Msg={settings.NEBULANET_GOSSIP_MAX_TORRENTS_PER_MESSAGE}"
+            f" - Clock Drift={settings.NEBULANET_GOSSIP_VALIDATION_FUTURE_TOLERANCE}s/{settings.NEBULANET_GOSSIP_VALIDATION_PAST_TOLERANCE}s"
+            f" - Max Torrent Age={settings.NEBULANET_GOSSIP_TORRENT_MAX_AGE}s",
         )
 
         logger.log(
-            "COMETNET",
-            f"Transport: Max Msg Size={settings.COMETNET_TRANSPORT_MAX_MESSAGE_SIZE}"
-            f" - Max Conn/IP={settings.COMETNET_TRANSPORT_MAX_CONNECTIONS_PER_IP}"
-            f" - Ping={settings.COMETNET_TRANSPORT_PING_INTERVAL}s"
-            f" - Timeout={settings.COMETNET_TRANSPORT_CONNECTION_TIMEOUT}s"
-            f" - Max Latency={settings.COMETNET_TRANSPORT_MAX_LATENCY_MS}ms"
-            f" - RateLimit: {settings.COMETNET_TRANSPORT_RATE_LIMIT_ENABLED} "
-            f"({settings.COMETNET_TRANSPORT_RATE_LIMIT_COUNT}/{settings.COMETNET_TRANSPORT_RATE_LIMIT_WINDOW}s)",
+            "NEBULANET",
+            f"Transport: Max Msg Size={settings.NEBULANET_TRANSPORT_MAX_MESSAGE_SIZE}"
+            f" - Max Conn/IP={settings.NEBULANET_TRANSPORT_MAX_CONNECTIONS_PER_IP}"
+            f" - Ping={settings.NEBULANET_TRANSPORT_PING_INTERVAL}s"
+            f" - Timeout={settings.NEBULANET_TRANSPORT_CONNECTION_TIMEOUT}s"
+            f" - Max Latency={settings.NEBULANET_TRANSPORT_MAX_LATENCY_MS}ms"
+            f" - RateLimit: {settings.NEBULANET_TRANSPORT_RATE_LIMIT_ENABLED} "
+            f"({settings.NEBULANET_TRANSPORT_RATE_LIMIT_COUNT}/{settings.NEBULANET_TRANSPORT_RATE_LIMIT_WINDOW}s)",
         )
 
         logger.log(
-            "COMETNET",
-            f"Discovery: PEX Batch={settings.COMETNET_PEX_BATCH_SIZE}"
-            f" - Backoff={settings.COMETNET_PEER_CONNECT_BACKOFF_MAX}s"
-            f" - Max Failures={settings.COMETNET_PEER_MAX_FAILURES}"
-            f" - Cleanup Age={settings.COMETNET_PEER_CLEANUP_AGE}s",
+            "NEBULANET",
+            f"Discovery: PEX Batch={settings.NEBULANET_PEX_BATCH_SIZE}"
+            f" - Backoff={settings.NEBULANET_PEER_CONNECT_BACKOFF_MAX}s"
+            f" - Max Failures={settings.NEBULANET_PEER_MAX_FAILURES}"
+            f" - Cleanup Age={settings.NEBULANET_PEER_CLEANUP_AGE}s",
         )
 
         logger.log(
-            "COMETNET",
-            f"Reputation: Init={settings.COMETNET_REPUTATION_INITIAL}"
-            f" - Range=[{settings.COMETNET_REPUTATION_MIN}, {settings.COMETNET_REPUTATION_MAX}]"
-            f" - Trust={settings.COMETNET_REPUTATION_THRESHOLD_TRUSTED}/{settings.COMETNET_REPUTATION_THRESHOLD_UNTRUSTED}"
-            f" - Valid Bonus=+{settings.COMETNET_REPUTATION_BONUS_VALID_CONTRIBUTION}"
-            f" - Anciennety Bonus=+{settings.COMETNET_REPUTATION_BONUS_PER_DAY_ANCIENNETY}/day (Max {settings.COMETNET_REPUTATION_BONUS_MAX_ANCIENNETY})"
-            f" - Invalid Penalty=-{settings.COMETNET_REPUTATION_PENALTY_INVALID_CONTRIBUTION}"
-            f" - Sig Penalty=-{settings.COMETNET_REPUTATION_PENALTY_INVALID_SIGNATURE}",
+            "NEBULANET",
+            f"Reputation: Init={settings.NEBULANET_REPUTATION_INITIAL}"
+            f" - Range=[{settings.NEBULANET_REPUTATION_MIN}, {settings.NEBULANET_REPUTATION_MAX}]"
+            f" - Trust={settings.NEBULANET_REPUTATION_THRESHOLD_TRUSTED}/{settings.NEBULANET_REPUTATION_THRESHOLD_UNTRUSTED}"
+            f" - Valid Bonus=+{settings.NEBULANET_REPUTATION_BONUS_VALID_CONTRIBUTION}"
+            f" - Anciennety Bonus=+{settings.NEBULANET_REPUTATION_BONUS_PER_DAY_ANCIENNETY}/day (Max {settings.NEBULANET_REPUTATION_BONUS_MAX_ANCIENNETY})"
+            f" - Invalid Penalty=-{settings.NEBULANET_REPUTATION_PENALTY_INVALID_CONTRIBUTION}"
+            f" - Sig Penalty=-{settings.NEBULANET_REPUTATION_PENALTY_INVALID_SIGNATURE}",
         )
 
         # Validate advertise_url format and security
@@ -251,7 +251,7 @@ class CometNetService(CometNetBackend):
                             self.pool_store._memberships.add(pool_id)
                             changes = True
                             logger.log(
-                                "COMETNET",
+                                "NEBULANET",
                                 f"Restored missing membership for pool {pool_id}",
                             )
 
@@ -259,23 +259,23 @@ class CometNetService(CometNetBackend):
                     await self.pool_store._save_memberships()
 
         # System Clock Sync Check
-        if not settings.COMETNET_SKIP_TIME_CHECK:
-            logger.log("COMETNET", "Verifying system clock synchronization...")
+        if not settings.NEBULANET_SKIP_TIME_CHECK:
+            logger.log("NEBULANET", "Verifying system clock synchronization...")
             is_synced, msg, offset = await check_system_clock_sync(
-                tolerance=settings.COMETNET_TIME_CHECK_TOLERANCE,
-                timeout=settings.COMETNET_TIME_CHECK_TIMEOUT,
+                tolerance=settings.NEBULANET_TIME_CHECK_TOLERANCE,
+                timeout=settings.NEBULANET_TIME_CHECK_TIMEOUT,
             )
 
             if is_synced:
-                logger.log("COMETNET", f"✓ System clock is synchronized ({msg})")
+                logger.log("NEBULANET", f"✓ System clock is synchronized ({msg})")
             else:
                 drift_info = (
-                    f"Drift: {offset:.2f}s (Tolerance: {settings.COMETNET_TIME_CHECK_TOLERANCE}s)\n"
+                    f"Drift: {offset:.2f}s (Tolerance: {settings.NEBULANET_TIME_CHECK_TOLERANCE}s)\n"
                     if abs(offset) > 0.001
                     else ""
                 )
                 logger.critical(
-                    f"\nCometNet failed to start: System clock check failed.\n"
+                    f"\nNebulaNet failed to start: System clock check failed.\n"
                     f"Status: {msg}\n"
                     f"{drift_info}\n"
                     "Accurate system time is critical for:\n"
@@ -283,7 +283,7 @@ class CometNetService(CometNetBackend):
                     "2. SSL/TLS connections\n"
                     "3. Distributed consensus\n\n"
                     "Please synchronize your clock (e.g. sudo ntpdate pool.ntp.org)\n"
-                    "To skip this check: COMETNET_SKIP_TIME_CHECK=true"
+                    "To skip this check: NEBULANET_SKIP_TIME_CHECK=true"
                 )
                 await logger.complete()
                 sys.exit(1)
@@ -292,11 +292,11 @@ class CometNetService(CometNetBackend):
         await self.transport.start()
 
         # Handle UPnP if enabled
-        if settings.COMETNET_UPNP_ENABLED:
-            logger.log("COMETNET", "Initializing UPnP...")
+        if settings.NEBULANET_UPNP_ENABLED:
+            logger.log("NEBULANET", "Initializing UPnP...")
             self.upnp = UPnPManager(
                 port=self.listen_port,
-                lease_duration=settings.COMETNET_UPNP_LEASE_DURATION,
+                lease_duration=settings.NEBULANET_UPNP_LEASE_DURATION,
             )
             external_ip = await self.upnp.start()
             if external_ip:
@@ -306,12 +306,12 @@ class CometNetService(CometNetBackend):
                     # Update transport with new URL
                     self.transport.advertise_url = self.advertise_url
                     logger.log(
-                        "COMETNET",
+                        "NEBULANET",
                         f"Public Address auto-configured via UPnP: {self.advertise_url}",
                     )
                 else:
                     logger.warning(
-                        f"UPnP mapped to {external_ip} but COMETNET_ADVERTISE_URL is already set. Using configured URL.",
+                        f"UPnP mapped to {external_ip} but NEBULANET_ADVERTISE_URL is already set. Using configured URL.",
                     )
 
         # Custom check for unencrypted transport
@@ -326,7 +326,7 @@ class CometNetService(CometNetBackend):
 
             if not is_local:
                 logger.warning(
-                    "SECURITY WARNING: CometNet is configured with unencrypted 'ws://' URL. "
+                    "SECURITY WARNING: NebulaNet is configured with unencrypted 'ws://' URL. "
                     "Your P2P traffic (including metadata) is visible to interceptors. "
                     "It is STRONGLY recommended to use 'wss://' (SSL) for public instances."
                 )
@@ -336,22 +336,22 @@ class CometNetService(CometNetBackend):
             self.advertise_url, allow_private=False
         ):
             # If we are in a private network or explicitly allow private PEX, we allow it (with warning)
-            if settings.COMETNET_PRIVATE_NETWORK or settings.COMETNET_ALLOW_PRIVATE_PEX:
+            if settings.NEBULANET_PRIVATE_NETWORK or settings.NEBULANET_ALLOW_PRIVATE_PEX:
                 logger.warning(
-                    "Your COMETNET_ADVERTISE_URL contains a private/internal IP address. "
-                    "This is allowed because COMETNET_PRIVATE_NETWORK or COMETNET_ALLOW_PRIVATE_PEX is enabled. "
+                    "Your NEBULANET_ADVERTISE_URL contains a private/internal IP address. "
+                    "This is allowed because NEBULANET_PRIVATE_NETWORK or NEBULANET_ALLOW_PRIVATE_PEX is enabled. "
                     "Public peers may not be able to connect."
                 )
             else:
                 # Do not allow starting with private IP on public network
                 logger.critical(
-                    f"\nCometNet failed to start because COMETNET_ADVERTISE_URL ('{self.advertise_url}') "
+                    f"\nNebulaNet failed to start because NEBULANET_ADVERTISE_URL ('{self.advertise_url}') "
                     "is a private address.\n"
                     "Public nodes MUST be reachable via a public URL.\n"
                     "Please:\n"
-                    "1. Set COMETNET_ADVERTISE_URL to your public URL (wss://your-domain.com/cometnet/ws)\n"
-                    "2. Or enable UPnP with COMETNET_UPNP_ENABLED=true\n"
-                    "3. Or if you are testing locally, set COMETNET_ALLOW_PRIVATE_PEX=true"
+                    "1. Set NEBULANET_ADVERTISE_URL to your public URL (wss://your-domain.com/nebulanet/ws)\n"
+                    "2. Or enable UPnP with NEBULANET_UPNP_ENABLED=true\n"
+                    "3. Or if you are testing locally, set NEBULANET_ALLOW_PRIVATE_PEX=true"
                 )
                 await logger.complete()
                 sys.exit(1)
@@ -359,35 +359,35 @@ class CometNetService(CometNetBackend):
         # Require advertise_url on public networks
         if not self.advertise_url:
             if (
-                not settings.COMETNET_PRIVATE_NETWORK
-                and not settings.COMETNET_ALLOW_PRIVATE_PEX
+                not settings.NEBULANET_PRIVATE_NETWORK
+                and not settings.NEBULANET_ALLOW_PRIVATE_PEX
             ):
                 upnp_hint = (
                     "   (UPnP is enabled but failed to configure - check your router)\n"
-                    if settings.COMETNET_UPNP_ENABLED
-                    else "2. Or enable UPnP with COMETNET_UPNP_ENABLED=true (will auto-configure)\n"
+                    if settings.NEBULANET_UPNP_ENABLED
+                    else "2. Or enable UPnP with NEBULANET_UPNP_ENABLED=true (will auto-configure)\n"
                 )
                 logger.critical(
-                    "\nCometNet failed to start because COMETNET_ADVERTISE_URL is not configured.\n"
+                    "\nNebulaNet failed to start because NEBULANET_ADVERTISE_URL is not configured.\n"
                     "Without a public URL, your node's local address will be shared with peers,\n"
                     "polluting the network with unreachable addresses.\n\n"
                     "Please:\n"
-                    "1. Set COMETNET_ADVERTISE_URL to your public URL (wss://your-domain.com/cometnet/ws)\n"
+                    "1. Set NEBULANET_ADVERTISE_URL to your public URL (wss://your-domain.com/nebulanet/ws)\n"
                     f"{upnp_hint}"
-                    "3. Or if you are testing locally, set COMETNET_ALLOW_PRIVATE_PEX=true"
+                    "3. Or if you are testing locally, set NEBULANET_ALLOW_PRIVATE_PEX=true"
                 )
                 await logger.complete()
                 sys.exit(1)
 
         # WebSocket reachability check
         # Verify we can connect to our own advertise URL (like a peer would)
-        if self.advertise_url and not settings.COMETNET_SKIP_REACHABILITY_CHECK:
-            max_retries = settings.COMETNET_REACHABILITY_RETRIES
-            retry_delay = settings.COMETNET_REACHABILITY_RETRY_DELAY
-            timeout = settings.COMETNET_REACHABILITY_TIMEOUT
+        if self.advertise_url and not settings.NEBULANET_SKIP_REACHABILITY_CHECK:
+            max_retries = settings.NEBULANET_REACHABILITY_RETRIES
+            retry_delay = settings.NEBULANET_REACHABILITY_RETRY_DELAY
+            timeout = settings.NEBULANET_REACHABILITY_TIMEOUT
 
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"Verifying WebSocket reachability of {self.advertise_url}...",
             )
 
@@ -397,7 +397,7 @@ class CometNetService(CometNetBackend):
             for attempt in range(1, max_retries + 1):
                 if attempt > 1:
                     logger.log(
-                        "COMETNET",
+                        "NEBULANET",
                         f"Retry {attempt}/{max_retries} after {retry_delay}s delay...",
                     )
                     await asyncio.sleep(retry_delay)
@@ -409,23 +409,23 @@ class CometNetService(CometNetBackend):
                 if is_reachable:
                     if attempt > 1:
                         logger.log(
-                            "COMETNET",
+                            "NEBULANET",
                             f"✓ Reachability check passed on attempt {attempt}/{max_retries} ({result_msg})",
                         )
                     else:
                         logger.log(
-                            "COMETNET", f"✓ Reachability check passed ({result_msg})"
+                            "NEBULANET", f"✓ Reachability check passed ({result_msg})"
                         )
                     break
                 else:
                     logger.log(
-                        "COMETNET",
+                        "NEBULANET",
                         f"✗ Attempt {attempt}/{max_retries} failed: {result_msg}",
                     )
 
             if not is_reachable:
                 logger.critical(
-                    f"\nCometNet failed to start: Cannot connect to COMETNET_ADVERTISE_URL\n"
+                    f"\nNebulaNet failed to start: Cannot connect to NEBULANET_ADVERTISE_URL\n"
                     f"URL: {self.advertise_url}\n"
                     f"Error: {result_msg}\n"
                     f"Failed after {max_retries} attempts\n\n"
@@ -433,9 +433,9 @@ class CometNetService(CometNetBackend):
                     "Troubleshooting:\n"
                     f"1. Ensure port {self.listen_port} is open and forwarded correctly\n"
                     "2. If using reverse proxy (e.g., Traefik), ensure WebSocket upgrade headers are forwarded\n"
-                    "3. If using Traefik, the reverse proxy may take time to open - increase COMETNET_REACHABILITY_RETRIES/DELAY\n"
+                    "3. If using Traefik, the reverse proxy may take time to open - increase NEBULANET_REACHABILITY_RETRIES/DELAY\n"
                     "4. Test manually: wscat -c " + self.advertise_url + "\n"
-                    "5. To skip this check: COMETNET_SKIP_REACHABILITY_CHECK=true"
+                    "5. To skip this check: NEBULANET_SKIP_REACHABILITY_CHECK=true"
                 )
                 await logger.complete()
                 sys.exit(1)
@@ -460,20 +460,20 @@ class CometNetService(CometNetBackend):
         )
 
         alias_info = (
-            f" ({settings.COMETNET_NODE_ALIAS})" if settings.COMETNET_NODE_ALIAS else ""
+            f" ({settings.NEBULANET_NODE_ALIAS})" if settings.NEBULANET_NODE_ALIAS else ""
         )
 
         logger.log(
-            "COMETNET",
-            f"CometNet started - Node ID: {self.identity.node_id[:8]}{alias_info} (mode: {settings.COMETNET_CONTRIBUTION_MODE}{pool_info})",
+            "NEBULANET",
+            f"NebulaNet started - Node ID: {self.identity.node_id[:8]}{alias_info} (mode: {settings.NEBULANET_CONTRIBUTION_MODE}{pool_info})",
         )
 
     async def stop(self) -> None:
-        """Stop the CometNet service."""
+        """Stop the NebulaNet service."""
         if not self._running:
             return
 
-        logger.log("COMETNET", "Stopping CometNet...")
+        logger.log("NEBULANET", "Stopping NebulaNet...")
 
         self._running = False
 
@@ -508,13 +508,13 @@ class CometNetService(CometNetBackend):
         # Shutdown the dedicated crypto thread pool
         shutdown_crypto_executor()
 
-        logger.log("COMETNET", "CometNet stopped")
+        logger.log("NEBULANET", "NebulaNet stopped")
 
     async def _periodic_state_save(self) -> None:
         """
-        Periodically save CometNet state to disk.
+        Periodically save NebulaNet state to disk.
         """
-        interval = settings.COMETNET_STATE_SAVE_INTERVAL
+        interval = settings.NEBULANET_STATE_SAVE_INTERVAL
 
         while self._running:
             try:
@@ -530,7 +530,7 @@ class CometNetService(CometNetBackend):
                 if self.pool_store:
                     await self.pool_store.save()
 
-                logger.log("COMETNET", "Periodic state save completed")
+                logger.log("NEBULANET", "Periodic state save completed")
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -587,7 +587,7 @@ class CometNetService(CometNetBackend):
                     pass
 
         if connected > 0:
-            logger.log("COMETNET", f"Reconnected to {connected} pool peers")
+            logger.log("NEBULANET", f"Reconnected to {connected} pool peers")
 
             # Send our manifests to newly connected peers to trigger sync
             # This ensures we receive their updated manifests if they have newer versions
@@ -611,11 +611,11 @@ class CometNetService(CometNetBackend):
             parsed = urlparse(url)
         except Exception as e:
             logger.critical(
-                f"\nCometNet failed to start: Invalid COMETNET_ADVERTISE_URL format.\n"
+                f"\nNebulaNet failed to start: Invalid NEBULANET_ADVERTISE_URL format.\n"
                 f"URL: {url}\n"
                 f"Error: {e}\n\n"
                 "Please provide a valid WebSocket URL like:\n"
-                "  wss://your-domain.com/cometnet/ws\n"
+                "  wss://your-domain.com/nebulanet/ws\n"
                 "  ws://123.45.67.89:8765"
             )
             await logger.complete()
@@ -624,11 +624,11 @@ class CometNetService(CometNetBackend):
         # Validate scheme
         if parsed.scheme not in ("ws", "wss"):
             logger.critical(
-                f"\nCometNet failed to start: Invalid URL scheme '{parsed.scheme}'.\n"
+                f"\nNebulaNet failed to start: Invalid URL scheme '{parsed.scheme}'.\n"
                 f"URL: {url}\n\n"
-                "COMETNET_ADVERTISE_URL must use 'ws://' or 'wss://' scheme.\n"
+                "NEBULANET_ADVERTISE_URL must use 'ws://' or 'wss://' scheme.\n"
                 "Examples:\n"
-                "  wss://your-domain.com/cometnet/ws (recommended)\n"
+                "  wss://your-domain.com/nebulanet/ws (recommended)\n"
                 "  ws://123.45.67.89:8765 (unencrypted)"
             )
             await logger.complete()
@@ -638,7 +638,7 @@ class CometNetService(CometNetBackend):
         hostname = parsed.hostname
         if not hostname:
             logger.critical(
-                f"\nCometNet failed to start: No hostname in COMETNET_ADVERTISE_URL.\n"
+                f"\nNebulaNet failed to start: No hostname in NEBULANET_ADVERTISE_URL.\n"
                 f"URL: {url}\n\n"
                 "Please specify a hostname or IP address."
             )
@@ -648,7 +648,7 @@ class CometNetService(CometNetBackend):
         # Validate port range
         if parsed.port is not None and not (1 <= parsed.port <= 65535):
             logger.critical(
-                f"\nCometNet failed to start: Invalid port {parsed.port}.\n"
+                f"\nNebulaNet failed to start: Invalid port {parsed.port}.\n"
                 f"URL: {url}\n\n"
                 "Port must be between 1 and 65535."
             )
@@ -657,22 +657,22 @@ class CometNetService(CometNetBackend):
 
         # Check for internal domains (unless private network is allowed)
         if (
-            not settings.COMETNET_PRIVATE_NETWORK
-            and not settings.COMETNET_ALLOW_PRIVATE_PEX
+            not settings.NEBULANET_PRIVATE_NETWORK
+            and not settings.NEBULANET_ALLOW_PRIVATE_PEX
         ):
             hostname_lower = hostname.lower()
 
             # Check for suspicious internal domain patterns
             if is_internal_domain(hostname_lower):
                 logger.critical(
-                    f"\nCometNet failed to start: COMETNET_ADVERTISE_URL uses an internal domain.\n"
+                    f"\nNebulaNet failed to start: NEBULANET_ADVERTISE_URL uses an internal domain.\n"
                     f"URL: {url}\n"
                     f"Hostname: {hostname}\n\n"
                     "Internal domains (.local, .internal, .lan, etc.) are not routable on the public internet.\n"
                     "Public nodes MUST use a publicly resolvable domain or IP address.\n\n"
                     "If this is intentional:\n"
-                    "1. For private networks: set COMETNET_PRIVATE_NETWORK=true\n"
-                    "2. For testing: set COMETNET_ALLOW_PRIVATE_PEX=true"
+                    "1. For private networks: set NEBULANET_PRIVATE_NETWORK=true\n"
+                    "2. For testing: set NEBULANET_ALLOW_PRIVATE_PEX=true"
                 )
                 await logger.complete()
                 sys.exit(1)
@@ -680,21 +680,21 @@ class CometNetService(CometNetBackend):
             # Check if domain resolves to a private IP (DNS rebinding protection)
             if await is_private_or_internal_ip(hostname_lower):
                 logger.critical(
-                    f"\nCometNet failed to start: COMETNET_ADVERTISE_URL resolves to a private IP.\n"
+                    f"\nNebulaNet failed to start: NEBULANET_ADVERTISE_URL resolves to a private IP.\n"
                     f"URL: {url}\n"
                     f"Hostname: {hostname}\n\n"
                     "This domain resolves to a private/internal IP address.\n"
                     "This could be a DNS rebinding attack or a misconfiguration.\n"
                     "Public nodes MUST resolve to a public IP address.\n\n"
                     "If this is intentional:\n"
-                    "1. For private networks: set COMETNET_PRIVATE_NETWORK=true\n"
-                    "2. For testing: set COMETNET_ALLOW_PRIVATE_PEX=true"
+                    "1. For private networks: set NEBULANET_PRIVATE_NETWORK=true\n"
+                    "2. For testing: set NEBULANET_ALLOW_PRIVATE_PEX=true"
                 )
                 await logger.complete()
                 sys.exit(1)
 
     async def _init_components(self) -> None:
-        """Initialize all CometNet components."""
+        """Initialize all NebulaNet components."""
         # Ensure keys directory exists
         self.keys_dir.mkdir(parents=True, exist_ok=True)
 
@@ -709,7 +709,7 @@ class CometNetService(CometNetBackend):
         self.keystore = PublicKeyStore()
 
         # Initialize pool store
-        self.pool_store = PoolStore(pools_dir=settings.COMETNET_POOLS_DIR)
+        self.pool_store = PoolStore(pools_dir=settings.NEBULANET_POOLS_DIR)
 
         # Initialize transport
         self.transport = ConnectionManager(
@@ -950,7 +950,7 @@ class CometNetService(CometNetBackend):
                         await self.pool_store._save_pool_peers()
 
                         logger.log(
-                            "COMETNET",
+                            "NEBULANET",
                             f"Removed from pool {message.pool_id} (kicked by admin) - pool data cleaned up",
                         )
                         return  # Don't store anything else for this pool
@@ -959,7 +959,7 @@ class CometNetService(CometNetBackend):
                         self.pool_store._memberships.add(message.pool_id)
                         await self.pool_store._save_memberships()
                         logger.log(
-                            "COMETNET",
+                            "NEBULANET",
                             f"Added to pool {message.pool_id}",
                         )
                     elif was_member and is_now_member:
@@ -972,7 +972,7 @@ class CometNetService(CometNetBackend):
                             and old_member.role != new_member.role
                         ):
                             logger.log(
-                                "COMETNET",
+                                "NEBULANET",
                                 f"Role updated in pool {message.pool_id}: {old_member.role} -> {new_member.role}",
                             )
 
@@ -983,7 +983,7 @@ class CometNetService(CometNetBackend):
                     await self.pool_store._save_pool_peers()
 
                 logger.log(
-                    "COMETNET",
+                    "NEBULANET",
                     f"Received pool manifest: {message.display_name} ({message.pool_id}) v{message.version}",
                 )
         except Exception as e:
@@ -1050,7 +1050,7 @@ class CometNetService(CometNetBackend):
 
             requester_node_id = NodeIdentity.node_id_from_public_key(requester_key)
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"Added {requester_node_id[:8]} to pool {pool_id} via join request",
             )
 
@@ -1166,7 +1166,7 @@ class CometNetService(CometNetBackend):
             # The message signature was already verified
             await self.pool_store.store_manifest(manifest)
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"Member {NodeIdentity.node_id_from_public_key(message.member_key)[:8]} left pool {message.pool_id}",
             )
             # Re-broadcast to others
@@ -1191,7 +1191,7 @@ class CometNetService(CometNetBackend):
         if manifest_valid:
             await self.pool_store.store_manifest(manifest)
             logger.log(
-                "COMETNET",
+                "NEBULANET",
                 f"Applied pool update: {message.action} {message.member_key[:8]}",
             )
 
@@ -1227,7 +1227,7 @@ class CometNetService(CometNetBackend):
         # Delete the pool locally
         await self.pool_store.delete_pool(message.pool_id)
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Pool {message.pool_id} deleted by creator {message.deleted_by[:8]}",
         )
 
@@ -1341,7 +1341,7 @@ class CometNetService(CometNetBackend):
 
     async def handle_websocket_connection(self, websocket, path: str = "") -> None:
         """
-        Handle an incoming WebSocket connection from FastAPI /cometnet/ws endpoint.
+        Handle an incoming WebSocket connection from FastAPI /nebulanet/ws endpoint.
         """
         if not self._running:
             await websocket.close()
@@ -1401,7 +1401,7 @@ class CometNetService(CometNetBackend):
                     pass
 
     async def get_stats(self) -> Dict:
-        """Get comprehensive CometNet statistics."""
+        """Get comprehensive NebulaNet statistics."""
         if not self._running:
             return {"enabled": False}
 
@@ -1465,12 +1465,12 @@ class CometNetService(CometNetBackend):
             "keystore_stats": self.keystore.get_stats() if self.keystore else {},
             "security_alerts": security_alerts,
             # stats
-            "contribution_mode": settings.COMETNET_CONTRIBUTION_MODE,
+            "contribution_mode": settings.NEBULANET_CONTRIBUTION_MODE,
             "pool_stats": self.pool_store.get_stats() if self.pool_store else {},
             # Private network info
-            "private_network": settings.COMETNET_PRIVATE_NETWORK,
-            "network_id": settings.COMETNET_NETWORK_ID
-            if settings.COMETNET_PRIVATE_NETWORK
+            "private_network": settings.NEBULANET_PRIVATE_NETWORK,
+            "network_id": settings.NEBULANET_NETWORK_ID
+            if settings.NEBULANET_PRIVATE_NETWORK
             else None,
         }
 
@@ -1519,7 +1519,7 @@ class CometNetService(CometNetBackend):
     ) -> Dict:
         """Create a new pool with this node as admin."""
         if not self._running or not self.pool_store:
-            raise RuntimeError("CometNet not running")
+            raise RuntimeError("NebulaNet not running")
 
         mode = JoinMode(join_mode)
 
@@ -1572,7 +1572,7 @@ class CometNetService(CometNetBackend):
 
             await self.transport.broadcast(delete_msg)
             logger.log(
-                "COMETNET", f"Deleted and broadcasted deletion of pool {pool_id}"
+                "NEBULANET", f"Deleted and broadcasted deletion of pool {pool_id}"
             )
 
         return result
@@ -1668,7 +1668,7 @@ class CometNetService(CometNetBackend):
 
         # First, try local (if we already have the manifest and invite)
         local_success = await self.pool_store.use_invite(
-            pool_id, invite_code, self.identity, alias=settings.COMETNET_NODE_ALIAS
+            pool_id, invite_code, self.identity, alias=settings.NEBULANET_NODE_ALIAS
         )
         if local_success:
             return True
@@ -1691,7 +1691,7 @@ class CometNetService(CometNetBackend):
             # If not connected, establish a connection
             if not peer_id:
                 logger.log(
-                    "COMETNET", f"Connecting to {node_url} to join pool {pool_id}..."
+                    "NEBULANET", f"Connecting to {node_url} to join pool {pool_id}..."
                 )
                 peer_id = await self.transport.connect_to_peer(node_url)
                 if not peer_id:
@@ -1704,7 +1704,7 @@ class CometNetService(CometNetBackend):
                 pool_id=pool_id,
                 invite_code=invite_code,
                 requester_key=self.identity.public_key_hex,
-                alias=settings.COMETNET_NODE_ALIAS,
+                alias=settings.NEBULANET_NODE_ALIAS,
             )
             join_request.signature = await self.identity.sign_hex_async(
                 join_request.to_signable_bytes()
@@ -1715,7 +1715,7 @@ class CometNetService(CometNetBackend):
                 return False
 
             logger.log(
-                "COMETNET", f"Sent join request for pool {pool_id} to {peer_id[:8]}"
+                "NEBULANET", f"Sent join request for pool {pool_id} to {peer_id[:8]}"
             )
 
             # The manifest will be received asynchronously via _handle_pool_manifest
@@ -1732,7 +1732,7 @@ class CometNetService(CometNetBackend):
                 self.pool_store.add_pool_peer(pool_id, node_url)
                 await self.pool_store._save_pool_peers()
 
-                logger.log("COMETNET", f"Successfully joined pool {pool_id}")
+                logger.log("NEBULANET", f"Successfully joined pool {pool_id}")
                 return True
 
             return False
@@ -1880,7 +1880,7 @@ class CometNetService(CometNetBackend):
         await self._broadcast_pool_manifest(manifest)
 
         logger.log(
-            "COMETNET",
+            "NEBULANET",
             f"Changed role of {member.node_id[:8]} to {new_role} in pool {pool_id}",
         )
         return True
@@ -1922,7 +1922,7 @@ class CometNetService(CometNetBackend):
 
             # Broadcast to all connected peers
             await self.transport.broadcast(leave_message)
-            logger.log("COMETNET", f"Broadcasted leave from pool {pool_id}")
+            logger.log("NEBULANET", f"Broadcasted leave from pool {pool_id}")
 
             # Now do local cleanup
             result = await self.pool_store.leave_pool(
@@ -1930,7 +1930,7 @@ class CometNetService(CometNetBackend):
                 identity=self.identity,
             )
             if result:
-                logger.log("COMETNET", f"Successfully left pool {pool_id}")
+                logger.log("NEBULANET", f"Successfully left pool {pool_id}")
             return result
         except (PermissionError, ValueError) as e:
             logger.warning(f"Failed to leave pool: {e}")
@@ -1971,7 +1971,7 @@ class CometNetService(CometNetBackend):
             if "reputation" in state and self.reputation:
                 self.reputation.from_dict(state["reputation"])
                 logger.log(
-                    "COMETNET",
+                    "NEBULANET",
                     f"Loaded reputation data for {len(state['reputation'].get('peers', {}))} peers",
                 )
 
@@ -1987,7 +1987,7 @@ class CometNetService(CometNetBackend):
             if "gossip" in state and self.gossip:
                 self.gossip.from_dict(state["gossip"])
         except Exception as e:
-            logger.warning(f"Failed to load CometNet state: {e}")
+            logger.warning(f"Failed to load NebulaNet state: {e}")
 
     async def _save_state(self) -> None:
         """Save state to disk."""
@@ -2020,48 +2020,48 @@ class CometNetService(CometNetBackend):
             async with aiofiles.open(state_path, "w") as f:
                 await f.write(json.dumps(state, indent=2))
         except Exception as e:
-            logger.warning(f"Failed to save CometNet state: {e}")
+            logger.warning(f"Failed to save NebulaNet state: {e}")
 
 
 # Global instance (will be initialized by app.py if enabled)
-cometnet_service: Optional[CometNetService] = None
+nebulanet_service: Optional[NebulaNetService] = None
 
 
-def get_cometnet_service() -> Optional[CometNetService]:
-    """Get the global CometNet service instance."""
-    return cometnet_service
+def get_nebulanet_service() -> Optional[NebulaNetService]:
+    """Get the global NebulaNet service instance."""
+    return nebulanet_service
 
 
-def init_cometnet_service(
+def init_nebulanet_service(
     enabled: bool = False,
     listen_port: int = 8765,
     bootstrap_nodes: Optional[List[str]] = None,
     manual_peers: Optional[List[str]] = None,
     max_peers: int = None,
     min_peers: int = None,
-) -> CometNetService:
-    """Initialize the global CometNet service."""
-    global cometnet_service
+) -> NebulaNetService:
+    """Initialize the global NebulaNet service."""
+    global nebulanet_service
 
     if settings.FASTAPI_WORKERS > 1:
         logger.critical(
-            f"\nCometNet failed to start because FASTAPI_WORKERS is set to {settings.FASTAPI_WORKERS}.\n"
-            "You cannot run CometNet in basic mode (non-relay) with multiple workers.\n"
+            f"\nNebulaNet failed to start because FASTAPI_WORKERS is set to {settings.FASTAPI_WORKERS}.\n"
+            "You cannot run NebulaNet in basic mode (non-relay) with multiple workers.\n"
             "Please:\n"
-            "1. Use CometNet Relay Mode (COMETNET_RELAY_URL=...)\n"
+            "1. Use NebulaNet Relay Mode (NEBULANET_RELAY_URL=...)\n"
             "2. Or set FASTAPI_WORKERS=1"
         )
         sys.exit(1)
 
-    cometnet_service = CometNetService(
+    nebulanet_service = NebulaNetService(
         enabled=enabled,
         listen_port=listen_port,
         bootstrap_nodes=bootstrap_nodes,
         manual_peers=manual_peers,
         max_peers=max_peers,
         min_peers=min_peers,
-        keys_dir=settings.COMETNET_KEYS_DIR,
-        advertise_url=settings.COMETNET_ADVERTISE_URL,
+        keys_dir=settings.NEBULANET_KEYS_DIR,
+        advertise_url=settings.NEBULANET_ADVERTISE_URL,
     )
 
-    return cometnet_service
+    return nebulanet_service

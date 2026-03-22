@@ -1,5 +1,5 @@
 [project]
-name = "comet"
+name = "nebula"
 version = "0.1.0"
 description = "Stremio's fastest torrent/debrid search add-on."
 authors = [

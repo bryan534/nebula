@@ -9,7 +9,7 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-ADDON_ID = "plugin.video.comet"
+ADDON_ID = "plugin.video.nebula"
 REQUEST_TIMEOUT = 20
 POLL_INTERVAL_SECONDS = 3
 HTTP_SESSION = requests.Session()
@@ -57,7 +57,7 @@ def _get_json(url: str):
     return response.json()
 
 
-def configure_comet():
+def configure_nebula():
     try:
         addon = xbmcaddon.Addon(ADDON_ID)
         dialog = xbmcgui.Dialog()
@@ -66,7 +66,7 @@ def configure_comet():
         base_url = addon.getSetting("base_url")
         secret_string = addon.getSetting("secret_string")
 
-        entered_url = dialog.input("Comet base URL", base_url)
+        entered_url = dialog.input("Nebula base URL", base_url)
         if not entered_url:
             return
 
@@ -74,7 +74,7 @@ def configure_comet():
         addon.setSetting("base_url", base_url)
 
         entered_secret = dialog.input(
-            "Comet configuration (optional)",
+            "Nebula configuration (optional)",
             secret_string,
             option=xbmcgui.ALPHANUM_HIDE_INPUT,
         )
@@ -89,7 +89,7 @@ def configure_comet():
             )
         except requests.RequestException as exc:
             dialog.notification(
-                "Comet",
+                "Nebula",
                 "Failed to generate Kodi setup code",
                 xbmcgui.NOTIFICATION_ERROR,
             )
@@ -107,18 +107,18 @@ def configure_comet():
         addon.setSetting("stremio_api_prefix", stremio_api_prefix)
 
         dialog.ok(
-            "Comet Kodi Setup",
+            "Nebula Kodi Setup",
             f"Setup code: {code}\nOpen the configuration page and complete setup before expiration.",
         )
 
         if dialog.yesno(
-            "Comet Kodi Setup",
-            "Open the Comet configuration page now?",
+            "Nebula Kodi Setup",
+            "Open the Nebula configuration page now?",
         ):
             open_configuration_page(configure_url)
 
         dialog.notification(
-            "Comet",
+            "Nebula",
             f"Waiting for setup code {code}",
             xbmcgui.NOTIFICATION_INFO,
         )
@@ -142,7 +142,7 @@ def configure_comet():
                         "stremio_api_prefix", manifest_data["stremio_api_prefix"]
                     )
                 dialog.notification(
-                    "Comet",
+                    "Nebula",
                     "Kodi setup complete",
                     xbmcgui.NOTIFICATION_INFO,
                 )
@@ -152,21 +152,21 @@ def configure_comet():
                 return
 
         dialog.notification(
-            "Comet",
+            "Nebula",
             "Setup code expired. Run setup again.",
             xbmcgui.NOTIFICATION_ERROR,
         )
     except Exception:
         xbmc.log(
-            "Comet Kodi setup crashed:\n" + traceback.format_exc(),
+            "Nebula Kodi setup crashed:\n" + traceback.format_exc(),
             xbmc.LOGERROR,
         )
         xbmcgui.Dialog().notification(
-            "Comet",
+            "Nebula",
             "Setup failed (check Kodi log)",
             xbmcgui.NOTIFICATION_ERROR,
         )
 
 
 if __name__ == "__main__":
-    configure_comet()
+    configure_nebula()

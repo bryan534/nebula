@@ -1,11 +1,11 @@
 import re
 
-from comet.core.logger import log_scraper_error
-from comet.core.models import settings
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.helpers.debridio import debridio_config
-from comet.scrapers.models import ScrapeRequest
-from comet.utils.formatting import size_to_bytes
+from nebula.core.logger import log_scraper_error
+from nebula.core.models import settings
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.helpers.debridio import debridio_config
+from nebula.scrapers.models import ScrapeRequest
+from nebula.utils.formatting import size_to_bytes
 
 DATA_PATTERN = re.compile(
     r"💾\s+([\d.,]+\s+[KMGT]B|Unknown|\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})(?:\s+👤\s+(\d+|Unknown|undefined))?(?:\s+⚙️\s+(.+?))?(?:\n|$)",

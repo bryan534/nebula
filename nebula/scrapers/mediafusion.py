@@ -1,7 +1,7 @@
-from comet.core.logger import log_scraper_error
-from comet.scrapers.base import BaseScraper
-from comet.scrapers.helpers.mediafusion import mediafusion_config
-from comet.scrapers.models import ScrapeRequest
+from nebula.core.logger import log_scraper_error
+from nebula.scrapers.base import BaseScraper
+from nebula.scrapers.helpers.mediafusion import mediafusion_config
+from nebula.scrapers.models import ScrapeRequest
 
 
 class MediaFusionScraper(BaseScraper):
